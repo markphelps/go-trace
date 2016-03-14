@@ -36,14 +36,12 @@ func main() {
 		for i := 0; i < nx; i++ {
 			// red and green values range from
 			// 0.0 to 1.0
-			r := float64(i) / float64(nx)
-			g := float64(j) / float64(ny)
-			b := 0.2
+			v := Vector{X: float64(i) / float64(nx), Y: float64(j) / float64(ny), Z: 0.2}
 
 			// get intensity of colors
-			ir := int(color * r)
-			ig := int(color * g)
-			ib := int(color * b)
+			ir := int(color * v.X)
+			ig := int(color * v.Y)
+			ib := int(color * v.Z)
 
 			_, err = fmt.Fprintf(f, "%d %d %d\n", ir, ig, ib)
 
