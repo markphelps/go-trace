@@ -45,7 +45,7 @@ func main() {
 
 			_, err = fmt.Fprintf(f, "%d %d %d\n", ir, ig, ib)
 
-			check(err, "Error writting to file: %v\n")
+			check(err, "Error writing to file: %v\n")
 		}
 	}
 }
