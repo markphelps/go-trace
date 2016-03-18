@@ -30,18 +30,33 @@ func main() {
 
 	check(err, "Error writting to file: %v\n")
 
+	lowerLeft := Vector{-2.0, -1.0, -1.0}
+	horizontal := Vector{4.0, 0.0, 0.0}
+	vertical := Vector{0.0, 2.0, 0.0}
+	origin := Vector{0.0, 0.0, 0.0}
+
 	// writes each pixel with r/g/b values
 	// from top left to bottom right
 	for j := ny - 1; j >= 0; j-- {
 		for i := 0; i < nx; i++ {
-			// red and green values range from
-			// 0.0 to 1.0
-			v := Vector{X: float64(i) / float64(nx), Y: float64(j) / float64(ny), Z: 0.2}
+			u := float64(i) / float64(nx)
+			v := float64(j) / float64(ny)
+
+			hor := horizontal.MultiplyScalar(u)
+			vert := vertical.MultiplyScalar(v)
+
+			v1 := hor.Add(vert)
+			v2 := lowerLeft.Add(v1)
+
+			direction := v1.Add(v2)
+			r := Ray{origin, direction}
+
+			rgb := r.Color()
 
 			// get intensity of colors
-			ir := int(color * v.X)
-			ig := int(color * v.Y)
-			ib := int(color * v.Z)
+			ir := int(color * rgb.X)
+			ig := int(color * rgb.Y)
+			ib := int(color * rgb.Z)
 
 			_, err = fmt.Fprintf(f, "%d %d %d\n", ir, ig, ib)
 
