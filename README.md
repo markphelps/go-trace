@@ -6,15 +6,11 @@ Following the E-book by Peter Shirley ['Ray Tracing in One Weekend'](http://www.
 
 ## Running
 
-`$ go run main.go`
+`$ go run *.go`
 
-## Output
+## Current Status
 
-Right now it just writes a pretty sweet gradient. 
-
-It's like the **Hello, World** of graphics so I'm told.
-
-!['Hello, World'](https://s3.amazonaws.com/markphelps.me/2016/hello-world.png)
+!['Red'](https://s3.amazonaws.com/markphelps.me/2016/red-sphere.png)
 
 It currently writes the image as a [PPM file](http://netpbm.sourceforge.net/doc/ppm.html), mainly because it's a super simple file format.
 
