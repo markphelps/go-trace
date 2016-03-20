@@ -29,6 +29,14 @@ func (v Vector) Subtract(o Vector) Vector {
 	return Vector{v.X - o.X, v.Y - o.Y, v.Z - o.Z}
 }
 
+func (v Vector) AddScalar(t float64) Vector {
+	return Vector{v.X + t, v.Y + t, v.Z + t}
+}
+
+func (v Vector) SubtractScalar(t float64) Vector {
+	return Vector{v.X - t, v.Y - t, v.Z - t}
+}
+
 func (v Vector) MultiplyScalar(t float64) Vector {
 	return Vector{v.X * t, v.Y * t, v.Z * t}
 }

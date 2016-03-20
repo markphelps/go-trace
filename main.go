@@ -15,7 +15,7 @@ func check(e error, s string) {
 func main() {
 	// size of image x and y
 	nx := 400
-	ny := 300
+	ny := 200
 
 	const color = 255.99
 
@@ -42,16 +42,15 @@ func main() {
 			u := float64(i) / float64(nx)
 			v := float64(j) / float64(ny)
 
-			hor := horizontal.MultiplyScalar(u)
-			vert := vertical.MultiplyScalar(v)
+			pHorizontal := horizontal.MultiplyScalar(u)
+			pVertical := vertical.MultiplyScalar(v)
 
-			v1 := hor.Add(vert)
-			v2 := lowerLeft.Add(v1)
+			position := pHorizontal.Add(pVertical)
 
-			direction := v1.Add(v2)
-			r := Ray{origin, direction}
+			// direction = lowerLeft + (u * horizontal) + (v * vertical)
+			direction := lowerLeft.Add(position)
 
-			rgb := r.Color()
+			rgb := Ray{origin, direction}.Color()
 
 			// get intensity of colors
 			ir := int(color * rgb.X)
