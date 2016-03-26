@@ -42,10 +42,7 @@ func main() {
 			u := float64(i) / float64(nx)
 			v := float64(j) / float64(ny)
 
-			pHorizontal := horizontal.MultiplyScalar(u)
-			pVertical := vertical.MultiplyScalar(v)
-
-			position := pHorizontal.Add(pVertical)
+			position := horizontal.MultiplyScalar(u).Add(vertical.MultiplyScalar(v))
 
 			// direction = lowerLeft + (u * horizontal) + (v * vertical)
 			direction := lowerLeft.Add(position)
