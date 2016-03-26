@@ -17,13 +17,18 @@ func (r Ray) Color() Vector {
 		return Vector{1.0, 0.0, 0.0} // red
 	}
 
+	// make unit vector so y is between -1.0 and 1.0
 	unitDirection := r.Direction.Normalize()
+
+	// scale t to be between 0.0 and 1.0
 	t := 0.5 * (unitDirection.Y + 1.0)
 
-	white := Vector{1.0, 1.0, 1.0}.MultiplyScalar(1.0 - t)
-	blue := Vector{0.5, 0.7, 1.0}.MultiplyScalar(t)
+	// linear blend
+	// blended_value = (1 - t) * white + t * blue
+	white := Vector{1.0, 1.0, 1.0}
+	blue := Vector{0.5, 0.7, 1.0}
 
-	return white.Add(blue)
+	return white.MultiplyScalar(1.0 - t).Add(blue.MultiplyScalar(t))
 }
 
 func (r Ray) HitSphere(s Sphere) bool {
