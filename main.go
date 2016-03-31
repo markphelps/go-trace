@@ -2,7 +2,27 @@ package main
 
 import (
 	"fmt"
+	p "github.com/markphelps/go-trace/primatives"
+	"math"
 	"os"
+)
+
+const (
+	nx = 400
+	ny = 200
+	c  = 255.99
+)
+
+var (
+	white = p.Vector{1.0, 1.0, 1.0}
+	blue  = p.Vector{0.5, 0.7, 1.0}
+
+	camera = p.NewCamera()
+
+	sphere = p.Sphere{Center: p.Vector{0, 0, -1}, Radius: 0.5}
+	floor  = p.Sphere{Center: p.Vector{0, -100.5, -1}, Radius: 100}
+
+	world = p.World{[]p.Hitable{&sphere, &floor}}
 )
 
 func check(e error, s string) {
@@ -12,12 +32,25 @@ func check(e error, s string) {
 	}
 }
 
+func color(r *p.Ray, h p.Hitable) p.Vector {
+	hit, record := h.Hit(r, 0.0, math.MaxFloat64)
+
+	if hit {
+		return record.Normal.AddScalar(1.0).MultiplyScalar(0.5)
+	}
+
+	// make unit vector so y is between -1.0 and 1.0
+	unitDirection := r.Direction.Normalize()
+
+	// scale t to be between 0.0 and 1.0
+	t := 0.5 * (unitDirection.Y + 1.0)
+
+	// linear blend: blended_value = (1 - t) * white + t * blue
+	return white.MultiplyScalar(1.0 - t).Add(blue.MultiplyScalar(t))
+}
+
 func main() {
 	// size of image x and y
-	nx := 400
-	ny := 200
-
-	const color = 255.99
 
 	f, err := os.Create("out.ppm")
 
@@ -30,11 +63,6 @@ func main() {
 
 	check(err, "Error writting to file: %v\n")
 
-	lowerLeft := Vector{-2.0, -1.0, -1.0}
-	horizontal := Vector{4.0, 0.0, 0.0}
-	vertical := Vector{0.0, 2.0, 0.0}
-	origin := Vector{0.0, 0.0, 0.0}
-
 	// writes each pixel with r/g/b values
 	// from top left to bottom right
 	for j := ny - 1; j >= 0; j-- {
@@ -42,17 +70,19 @@ func main() {
 			u := float64(i) / float64(nx)
 			v := float64(j) / float64(ny)
 
-			position := horizontal.MultiplyScalar(u).Add(vertical.MultiplyScalar(v))
+			position := camera.Position(u, v)
 
 			// direction = lowerLeft + (u * horizontal) + (v * vertical)
-			direction := lowerLeft.Add(position)
+			direction := camera.Direction(position)
 
-			rgb := Ray{origin, direction}.Color()
+			r := p.Ray{camera.Origin, direction}
+
+			rgb := color(&r, &world)
 
 			// get intensity of colors
-			ir := int(color * rgb.X)
-			ig := int(color * rgb.Y)
-			ib := int(color * rgb.Z)
+			ir := int(c * rgb.X)
+			ig := int(c * rgb.Y)
+			ib := int(c * rgb.Z)
 
 			_, err = fmt.Fprintf(f, "%d %d %d\n", ir, ig, ib)
 
