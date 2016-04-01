@@ -4,12 +4,14 @@ import (
 	"fmt"
 	p "github.com/markphelps/go-trace/primatives"
 	"math"
+	"math/rand"
 	"os"
 )
 
 const (
 	nx = 400
 	ny = 200
+	ns = 100
 	c  = 255.99
 )
 
@@ -67,17 +69,18 @@ func main() {
 	// from top left to bottom right
 	for j := ny - 1; j >= 0; j-- {
 		for i := 0; i < nx; i++ {
-			u := float64(i) / float64(nx)
-			v := float64(j) / float64(ny)
+			rgb := p.Vector{0, 0, 0}
 
-			position := camera.Position(u, v)
+			for s := 0; s < ns; s++ {
+				u := (float64(i) + rand.Float64()) / float64(nx)
+				v := (float64(j) + rand.Float64()) / float64(ny)
 
-			// direction = lowerLeft + (u * horizontal) + (v * vertical)
-			direction := camera.Direction(position)
+				r := camera.RayAt(u, v)
+				color := color(&r, &world)
+				rgb = rgb.Add(color)
+			}
 
-			r := p.Ray{camera.Origin, direction}
-
-			rgb := color(&r, &world)
+			rgb = rgb.DivideScalar(float64(ns))
 
 			// get intensity of colors
 			ir := int(c * rgb.X)
