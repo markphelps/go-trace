@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"time"
 
 	p "github.com/markphelps/go-trace/primatives"
 )
@@ -44,7 +45,6 @@ func color(r *p.Ray, h p.Hitable) p.Vector {
 
 	// make unit vector so y is between -1.0 and 1.0
 	unitDirection := r.Direction.Normalize()
-
 	return gradient(&unitDirection)
 }
 
@@ -57,6 +57,7 @@ func gradient(v *p.Vector) p.Vector {
 }
 
 func main() {
+	start := time.Now()
 
 	f, err := os.Create("out.ppm")
 	defer f.Close()
@@ -66,8 +67,6 @@ func main() {
 	_, err = fmt.Fprintf(f, "P3\n%d %d\n255\n", nx, ny)
 	check(err, "Error writting to file: %v\n")
 
-	// writes each pixel with r/g/b values
-	// from top left to bottom right
 	for j := ny - 1; j >= 0; j-- {
 		for i := 0; i < nx; i++ {
 			rgb := p.Vector{}
@@ -94,4 +93,6 @@ func main() {
 			check(err, "Error writing to file: %v\n")
 		}
 	}
+
+	fmt.Printf("Done.\nElapsed: %v\n", time.Since(start))
 }
