@@ -29,9 +29,9 @@ var (
 	world = p.World{[]p.Hitable{&sphere, &floor}}
 )
 
-func check(e error, s string) {
-	if e != nil {
-		fmt.Fprintf(os.Stderr, s, e)
+func check(err error, msg string) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, msg, err)
 		os.Exit(1)
 	}
 }
@@ -77,7 +77,7 @@ func main() {
 				v := (float64(j) + rand.Float64()) / float64(ny)
 
 				r := camera.RayAt(u, v)
-				color := color(&r, &world)
+				color := color(r, &world)
 				rgb = rgb.Add(color)
 			}
 

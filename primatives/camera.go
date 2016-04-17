@@ -15,11 +15,11 @@ func NewCamera() *Camera {
 	return c
 }
 
-func (c *Camera) RayAt(u float64, v float64) Ray {
+func (c *Camera) RayAt(u float64, v float64) *Ray {
 	position := c.position(u, v)
 	direction := c.direction(position)
 
-	return Ray{c.origin, direction}
+	return &Ray{c.origin, direction}
 }
 
 func (c *Camera) position(u float64, v float64) Vector {
