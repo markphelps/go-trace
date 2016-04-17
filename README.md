@@ -4,6 +4,8 @@ Implementing a Path Tracer so that I can teach myself the Go language.
 
 Following the E-book by Peter Shirley ['Ray Tracing in One Weekend'](http://www.amazon.com/Ray-Tracing-Weekend-Peter-Shirley-ebook/dp/B01B5AODD8), but in Go instead of C++.
 
+Also writing a blog series chronicling the process on [my blog](http://www.markphelps.me/2016/03/15/writing-a-ray-tracer-in-go.html).
+
 ## Current Status
 
 !['Purple/Green'](https://s3.amazonaws.com/markphelps.me/2016/purple-green-aa.png)
