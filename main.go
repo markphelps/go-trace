@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	p "github.com/markphelps/go-trace/primatives"
+	p "github.com/markphelps/go-trace/primitives"
 )
 
 const (

@@ -1,4 +1,4 @@
-package primatives
+package primitives
 
 type World struct {
 	Elements []Hitable

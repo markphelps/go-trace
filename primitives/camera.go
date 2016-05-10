@@ -1,4 +1,4 @@
-package primatives
+package primitives
 
 type Camera struct {
 	lowerLeft, horizontal, vertical, origin Vector

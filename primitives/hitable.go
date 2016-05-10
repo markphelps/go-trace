@@ -1,4 +1,4 @@
-package primatives
+package primitives
 
 type Hit struct {
 	T         float64
