@@ -16,7 +16,7 @@ I may add support for more formats later.
 
 ## Running
 
-`$ go run main.go`
+`$ go run *.go`
 
 ## Viewing
 
