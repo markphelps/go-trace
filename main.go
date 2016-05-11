@@ -40,12 +40,24 @@ func color(r *p.Ray, h p.Hitable) p.Vector {
 	hit, record := h.Hit(r, 0.0, math.MaxFloat64)
 
 	if hit {
-		return record.Normal.AddScalar(1.0).MultiplyScalar(0.5)
+		target := record.P.Add(record.Normal).Add(random())
+		return color(&p.Ray{record.P, target.Subtract(record.P)}, h).MultiplyScalar(0.5)
 	}
 
 	// make unit vector so y is between -1.0 and 1.0
 	unitDirection := r.Direction.Normalize()
 	return gradient(&unitDirection)
+}
+
+func random() p.Vector {
+	unitVector := p.Vector{1, 1, 1}
+	for {
+		r := p.Vector{rand.Float64(), rand.Float64(), rand.Float64()}
+		p := r.MultiplyScalar(2.0).Subtract(unitVector)
+		if p.SquaredLength() >= 1.0 {
+			return p
+		}
+	}
 }
 
 func gradient(v *p.Vector) p.Vector {
@@ -85,9 +97,9 @@ func main() {
 			rgb = rgb.DivideScalar(float64(ns))
 
 			// get intensity of colors
-			ir := int(c * rgb.X)
-			ig := int(c * rgb.Y)
-			ib := int(c * rgb.Z)
+			ir := int(c * math.Sqrt(rgb.X))
+			ig := int(c * math.Sqrt(rgb.Y))
+			ib := int(c * math.Sqrt(rgb.Z))
 
 			_, err = fmt.Fprintf(f, "%d %d %d\n", ir, ig, ib)
 			check(err, "Error writing to file: %v\n")
