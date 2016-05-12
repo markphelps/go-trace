@@ -22,15 +22,15 @@ func (s *Sphere) Hit(r *Ray, tMin float64, tMax float64) (bool, Hit) {
 		t := (-b - math.Sqrt(b*b-a*c)) / a
 		if t < tMax && t > tMin {
 			hit.T = t
-			hit.P = r.Point(t)
-			hit.Normal = (hit.P.Subtract(s.Center)).DivideScalar(s.Radius)
+			hit.Point = r.Point(t)
+			hit.Normal = (hit.Point.Subtract(s.Center)).DivideScalar(s.Radius)
 			return true, hit
 		}
 		t = (-b + math.Sqrt(b*b-a*c)) / a
 		if t < tMax && t > tMin {
 			hit.T = t
-			hit.P = r.Point(t)
-			hit.Normal = (hit.P.Subtract(s.Center)).DivideScalar(s.Radius)
+			hit.Point = r.Point(t)
+			hit.Normal = (hit.Point.Subtract(s.Center)).DivideScalar(s.Radius)
 			return true, hit
 		}
 	}

@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	nx = 400 // size of x
-	ny = 200 // size of y
-	ns = 100 // number of samples for aa
-	c  = 255.99
+	nx        = 400 // size of x
+	ny        = 200 // size of y
+	ns        = 100 // number of samples for aa
+	c         = 255.99
+	emittance = 0.5
 )
 
 var (
@@ -36,28 +37,20 @@ func check(err error, msg string) {
 	}
 }
 
-func color(r *p.Ray, h p.Hitable) p.Vector {
-	hit, record := h.Hit(r, 0.0, math.MaxFloat64)
+func color(r *p.Ray, world p.Hitable) p.Vector {
+	hit, record := world.Hit(r, 0.0, math.MaxFloat64)
 
 	if hit {
-		target := record.P.Add(record.Normal).Add(random())
-		return color(&p.Ray{record.P, target.Subtract(record.P)}, h).MultiplyScalar(0.5)
+		// pick a random direction from the normal of the hitpoint
+		direction := record.Normal.Add(p.VectorInUnitSphere())
+		reflectedRay := p.Ray{record.Point, direction}
+		// each hit absorbs half of the light
+		return color(&reflectedRay, world).MultiplyScalar(emittance)
 	}
 
 	// make unit vector so y is between -1.0 and 1.0
 	unitDirection := r.Direction.Normalize()
 	return gradient(&unitDirection)
-}
-
-func random() p.Vector {
-	unitVector := p.Vector{1, 1, 1}
-	for {
-		r := p.Vector{rand.Float64(), rand.Float64(), rand.Float64()}
-		p := r.MultiplyScalar(2.0).Subtract(unitVector)
-		if p.SquaredLength() >= 1.0 {
-			return p
-		}
-	}
 }
 
 func gradient(v *p.Vector) p.Vector {
@@ -69,8 +62,6 @@ func gradient(v *p.Vector) p.Vector {
 }
 
 func main() {
-	start := time.Now()
-
 	f, err := os.Create("out.ppm")
 	defer f.Close()
 	check(err, "Error opening file: %v\n")
@@ -78,6 +69,23 @@ func main() {
 	// http://netpbm.sourceforge.net/doc/ppm.html
 	_, err = fmt.Fprintf(f, "P3\n%d %d\n255\n", nx, ny)
 	check(err, "Error writting to file: %v\n")
+
+	done := make(chan bool)
+	ticker := time.NewTicker(time.Millisecond * 100)
+
+	// keep track of time in different goroutine
+	go func() {
+		start := time.Now()
+		for {
+			select {
+			case <-ticker.C:
+				fmt.Print(".")
+			case <-done:
+				ticker.Stop()
+				fmt.Printf("\nDone.\nElapsed: %v\n", time.Since(start))
+			}
+		}
+	}()
 
 	for j := ny - 1; j >= 0; j-- {
 		for i := 0; i < nx; i++ {
@@ -106,5 +114,5 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Done.\nElapsed: %v\n", time.Since(start))
+	done <- true
 }

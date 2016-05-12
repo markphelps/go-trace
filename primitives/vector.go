@@ -2,10 +2,22 @@ package primitives
 
 import (
 	"math"
+	"math/rand"
 )
 
 type Vector struct {
 	X, Y, Z float64
+}
+
+func VectorInUnitSphere() Vector {
+	unitVector := Vector{1, 1, 1}
+	for {
+		r := Vector{rand.Float64(), rand.Float64(), rand.Float64()}
+		p := r.MultiplyScalar(2.0).Subtract(unitVector)
+		if p.SquaredLength() >= 1.0 {
+			return p
+		}
+	}
 }
 
 func (v Vector) Length() float64 {

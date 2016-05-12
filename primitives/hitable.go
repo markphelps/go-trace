@@ -1,8 +1,8 @@
 package primitives
 
 type Hit struct {
-	T         float64
-	P, Normal Vector
+	T             float64
+	Point, Normal Vector
 }
 
 type Hitable interface {
