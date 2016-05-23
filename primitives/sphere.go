@@ -7,32 +7,33 @@ import (
 type Sphere struct {
 	Center Vector
 	Radius float64
+	Material
 }
 
-func (s *Sphere) Hit(r *Ray, tMin float64, tMax float64) (bool, Hit) {
+func (s *Sphere) Hit(r Ray, tMin float64, tMax float64) (bool, Hit) {
 	oc := r.Origin.Subtract(s.Center)
 	a := r.Direction.Dot(r.Direction)
-	b := 2.0 * oc.Dot(r.Direction)
+	b := oc.Dot(r.Direction)
 	c := oc.Dot(oc) - s.Radius*s.Radius
-	discriminant := b*b - 4*a*c
+	discriminant := b*b - a*c
 
-	hit := Hit{}
+	hit := Hit{Material: s.Material}
 
-	if discriminant > 0.0 {
-		t := (-b - math.Sqrt(b*b-a*c)) / a
-		if t < tMax && t > tMin {
-			hit.T = t
-			hit.Point = r.Point(t)
-			hit.Normal = (hit.Point.Subtract(s.Center)).DivideScalar(s.Radius)
+	if discriminant > 0 {
+		temp := (-b - math.Sqrt(discriminant)) / a
+		if temp < tMax && temp > tMin {
+			hit.T = temp
+			hit.Point = r.Point(temp)
+			hit.Normal = hit.Point.Subtract(s.Center).DivideScalar(s.Radius)
 			return true, hit
 		}
-		t = (-b + math.Sqrt(b*b-a*c)) / a
-		if t < tMax && t > tMin {
-			hit.T = t
-			hit.Point = r.Point(t)
-			hit.Normal = (hit.Point.Subtract(s.Center)).DivideScalar(s.Radius)
+		temp = (-b + math.Sqrt(discriminant)) / a
+		if temp < tMax && temp > tMin {
+			hit.T = temp
+			hit.Point = r.Point(temp)
+			hit.Normal = hit.Point.Subtract(s.Center).DivideScalar(s.Radius)
 			return true, hit
 		}
 	}
-	return false, hit
+	return false, Hit{}
 }

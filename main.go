@@ -24,10 +24,12 @@ var (
 
 	camera = p.NewCamera()
 
-	sphere = p.Sphere{p.Vector{0, 0, -1}, 0.5}
-	floor  = p.Sphere{p.Vector{0, -100.5, -1}, 100}
+	sphere = p.Sphere{p.Vector{0, 0, -1}, 0.5, p.Lambertian{p.Vector{0.8, 0.3, 0.3}}}
+	floor  = p.Sphere{p.Vector{0, -100.5, -1}, 100, p.Lambertian{p.Vector{0.8, 0.8, 0.0}}}
+	left   = p.Sphere{p.Vector{1, 0, -1}, 0.5, p.Metal{p.Vector{0.8, 0.6, 0.2}}}
+	right  = p.Sphere{p.Vector{-1, 0, -1}, 0.5, p.Metal{p.Vector{0.8, 0.8, 0.8}}}
 
-	world = p.World{[]p.Hitable{&sphere, &floor}}
+	world = p.World{[]p.Hitable{&sphere, &floor, &left, &right}}
 )
 
 func check(err error, msg string) {
@@ -37,23 +39,24 @@ func check(err error, msg string) {
 	}
 }
 
-func color(r *p.Ray, world p.Hitable) p.Vector {
-	hit, record := world.Hit(r, 0.0, math.MaxFloat64)
+func color(r p.Ray, world p.Hitable, depth int) p.Vector {
+	hit, record := world.Hit(r, 0.001, math.MaxFloat64)
 
 	if hit {
-		// pick a random direction from the normal of the hitpoint
-		direction := record.Normal.Add(p.VectorInUnitSphere())
-		reflectedRay := p.Ray{record.Point, direction}
-		// each hit absorbs half of the light
-		return color(&reflectedRay, world).MultiplyScalar(emittance)
+		if depth < 50 {
+			bounced, bouncedRay := record.Bounce(r, record)
+			if bounced {
+				return record.Material.Color().Multiply(color(bouncedRay, world, depth+1))
+			}
+		}
+		return p.Vector{}
 	}
 
 	// make unit vector so y is between -1.0 and 1.0
-	unitDirection := r.Direction.Normalize()
-	return gradient(&unitDirection)
+	return gradient(r.Direction.Normalize())
 }
 
-func gradient(v *p.Vector) p.Vector {
+func gradient(v p.Vector) p.Vector {
 	// scale t to be between 0.0 and 1.0
 	t := 0.5 * (v.Y + 1.0)
 
@@ -90,7 +93,7 @@ func main() {
 				v := (float64(j) + rand.Float64()) / float64(ny)
 
 				r := camera.RayAt(u, v)
-				color := color(r, &world)
+				color := color(r, &world, 0)
 				rgb = rgb.Add(color)
 			}
 
