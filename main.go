@@ -70,20 +70,13 @@ func main() {
 	_, err = fmt.Fprintf(f, "P3\n%d %d\n255\n", nx, ny)
 	check(err, "Error writting to file: %v\n")
 
-	done := make(chan bool)
 	ticker := time.NewTicker(time.Millisecond * 100)
+	start := time.Now()
 
-	// keep track of time in different goroutine
 	go func() {
-		start := time.Now()
 		for {
-			select {
-			case <-ticker.C:
-				fmt.Print(".")
-			case <-done:
-				ticker.Stop()
-				fmt.Printf("\nDone.\nElapsed: %v\n", time.Since(start))
-			}
+			<-ticker.C
+			fmt.Print(".")
 		}
 	}()
 
@@ -114,5 +107,6 @@ func main() {
 		}
 	}
 
-	done <- true
+	ticker.Stop()
+	fmt.Printf("\nDone.\nElapsed: %v\n", time.Since(start))
 }
