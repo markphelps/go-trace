@@ -17,11 +17,6 @@ const (
 	c  = 255.99
 )
 
-var (
-	white = p.Vector{1.0, 1.0, 1.0}
-	blue  = p.Vector{0.5, 0.7, 1.0}
-)
-
 func check(err error, msg string) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, msg, err)
@@ -29,7 +24,7 @@ func check(err error, msg string) {
 	}
 }
 
-func color(r p.Ray, world p.Hitable, depth int) p.Vector {
+func color(r p.Ray, world p.Hitable, depth int) p.Color {
 	hit, record := world.Hit(r, 0.001, math.MaxFloat64)
 
 	if hit {
@@ -40,21 +35,10 @@ func color(r p.Ray, world p.Hitable, depth int) p.Vector {
 				return record.Material.Color().Multiply(newColor)
 			}
 		}
-		return p.Vector{}
+		return p.Black
 	}
 
-	return gradient(r)
-}
-
-func gradient(r p.Ray) p.Vector {
-	// make unit vector so y is between -1.0 and 1.0
-	v := r.Direction.Normalize()
-
-	// scale t to be between 0.0 and 1.0
-	t := 0.5 * (v.Y + 1.0)
-
-	// linear blend: blended_value = (1 - t) * white + t * blue
-	return white.MultiplyScalar(1.0 - t).Add(blue.MultiplyScalar(t))
+	return p.Gradient(p.White, p.Blue, r.Direction.Normalize().Y)
 }
 
 func createFile() *os.File {
@@ -67,19 +51,19 @@ func createFile() *os.File {
 	return f
 }
 
-func writeFile(f *os.File, rgb p.Vector) {
+func writeFile(f *os.File, rgb p.Color) {
 	// get intensity of colors
-	ir := int(c * math.Sqrt(rgb.X))
-	ig := int(c * math.Sqrt(rgb.Y))
-	ib := int(c * math.Sqrt(rgb.Z))
+	ir := int(c * math.Sqrt(rgb.R))
+	ig := int(c * math.Sqrt(rgb.G))
+	ib := int(c * math.Sqrt(rgb.B))
 
 	_, err := fmt.Fprintf(f, "%d %d %d\n", ir, ig, ib)
 	check(err, "Error writing to file: %v\n")
 }
 
 // samples rays for anti-aliasing
-func sample(world *p.World, camera *p.Camera, i, j int) p.Vector {
-	rgb := p.Vector{}
+func sample(world *p.World, camera *p.Camera, i, j int) p.Color {
+	rgb := p.Color{}
 
 	for s := 0; s < ns; s++ {
 		u := (float64(i) + rand.Float64()) / float64(nx)
@@ -124,10 +108,10 @@ func main() {
 
 	world := p.World{}
 
-	sphere := p.Sphere{p.Vector{0, 0, -1}, 0.5, p.Lambertian{p.Vector{0.8, 0.3, 0.3}}}
-	floor := p.Sphere{p.Vector{0, -100.5, -1}, 100, p.Lambertian{p.Vector{0.8, 0.8, 0.0}}}
-	left := p.Sphere{p.Vector{-1, 0, -1}, 0.5, p.Metal{p.Vector{0.8, 0.8, 0.8}, 0.0}}
-	right := p.Sphere{p.Vector{1, 0, -1}, 0.5, p.Metal{p.Vector{0.8, 0.6, 0.2}, 0.3}}
+	sphere := p.Sphere{p.Vector{0, 0, -1}, 0.5, p.Lambertian{p.Color{0.8, 0.3, 0.3}}}
+	floor := p.Sphere{p.Vector{0, -100.5, -1}, 100, p.Lambertian{p.Color{0.8, 0.8, 0.0}}}
+	left := p.Sphere{p.Vector{-1, 0, -1}, 0.5, p.Metal{p.Color{0.8, 0.8, 0.8}, 0.0}}
+	right := p.Sphere{p.Vector{1, 0, -1}, 0.5, p.Metal{p.Color{0.8, 0.6, 0.2}, 0.3}}
 
 	world.Add(&sphere)
 	world.Add(&floor)
