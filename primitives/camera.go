@@ -17,7 +17,7 @@ func NewCamera() Camera {
 
 func (c Camera) RayAt(u float64, v float64) Ray {
 	position := c.position(u, v)
-	direction := c.direction(position)
+	direction := c.lowerLeft.Add(position)
 
 	return Ray{c.origin, direction}
 }
@@ -27,8 +27,4 @@ func (c Camera) position(u float64, v float64) Vector {
 	vertical := c.vertical.MultiplyScalar(v)
 
 	return horizontal.Add(vertical)
-}
-
-func (c Camera) direction(position Vector) Vector {
-	return c.lowerLeft.Add(position)
 }
