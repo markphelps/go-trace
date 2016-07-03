@@ -10,6 +10,10 @@ type Sphere struct {
 	Material
 }
 
+func NewSphere(x, y, z, radius float64, m Material) Sphere {
+	return Sphere{Vector{x, y, z}, radius, m}
+}
+
 func (s *Sphere) Hit(r Ray, tMin float64, tMax float64) (bool, Hit) {
 	oc := r.Origin.Subtract(s.Center)
 	a := r.Direction.Dot(r.Direction)

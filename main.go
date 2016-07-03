@@ -52,7 +52,7 @@ func createFile() *os.File {
 }
 
 func writeFile(f *os.File, rgb p.Color) {
-	// get intensity of colors
+	// get intensity of colors with gamma-2 correction
 	ir := int(c * math.Sqrt(rgb.R))
 	ig := int(c * math.Sqrt(rgb.G))
 	ib := int(c * math.Sqrt(rgb.B))
@@ -108,15 +108,13 @@ func main() {
 
 	world := p.World{}
 
-	sphere := p.Sphere{p.Vector{0, 0, -1}, 0.5, p.Lambertian{p.Color{0.8, 0.3, 0.3}}}
-	floor := p.Sphere{p.Vector{0, -100.5, -1}, 100, p.Lambertian{p.Color{0.8, 0.8, 0.0}}}
-	left := p.Sphere{p.Vector{-1, 0, -1}, 0.5, p.Metal{p.Color{0.8, 0.8, 0.8}, 0.0}}
-	right := p.Sphere{p.Vector{1, 0, -1}, 0.5, p.Metal{p.Color{0.8, 0.6, 0.2}, 0.3}}
+	sphere := p.NewSphere(0, 0, -1, 0.5, p.Lambertian{p.Color{0.8, 0.3, 0.3}})
+	floor := p.NewSphere(0, -100.5, -1, 100, p.Lambertian{p.Color{0.8, 0.8, 0.0}})
+	metal := p.NewSphere(1, 0, -1, 0.5, p.Metal{p.Color{0.8, 0.6, 0.2}, 0.3})
+	glass := p.NewSphere(-1, 0, -1, 0.5, p.Dielectric{1.5})
+	bubble := p.NewSphere(-1, 0, -1, -0.45, p.Dielectric{1.5})
 
-	world.Add(&sphere)
-	world.Add(&floor)
-	world.Add(&left)
-	world.Add(&right)
+	world.AddAll(&sphere, &floor, &metal, &glass, &bubble)
 
 	render(&world, &camera)
 }

@@ -68,3 +68,21 @@ func (v Vector) MultiplyScalar(t float64) Vector {
 func (v Vector) DivideScalar(t float64) Vector {
 	return Vector{v.X / t, v.Y / t, v.Z / t}
 }
+
+func (v Vector) Reflect(o Vector) Vector {
+	b := 2 * v.Dot(o)
+	return v.Subtract(o.MultiplyScalar(b))
+}
+
+func (v Vector) Refract(o Vector, n float64) (bool, Vector) {
+	uv := v.Normalize()
+	uo := o.Normalize()
+	dt := uv.Dot(uo)
+	discriminant := 1.0 - (n * n * (1 - dt*dt))
+	if discriminant > 0 {
+		a := uv.Subtract(o.MultiplyScalar(dt)).MultiplyScalar(n)
+		b := o.MultiplyScalar(math.Sqrt(discriminant))
+		return true, a.Subtract(b)
+	}
+	return false, Vector{}
+}
