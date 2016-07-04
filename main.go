@@ -104,17 +104,16 @@ func render(world *p.World, camera *p.Camera) {
 }
 
 func main() {
-	camera := p.NewCamera()
+	camera := p.NewCamera(90, float64(nx)/float64(ny))
 
 	world := p.World{}
 
-	sphere := p.NewSphere(0, 0, -1, 0.5, p.Lambertian{p.Color{0.8, 0.3, 0.3}})
-	floor := p.NewSphere(0, -100.5, -1, 100, p.Lambertian{p.Color{0.8, 0.8, 0.0}})
-	metal := p.NewSphere(1, 0, -1, 0.5, p.Metal{p.Color{0.8, 0.6, 0.2}, 0.3})
-	glass := p.NewSphere(-1, 0, -1, 0.5, p.Dielectric{1.5})
-	bubble := p.NewSphere(-1, 0, -1, -0.45, p.Dielectric{1.5})
+	radius := math.Cos(math.Pi / 4)
 
-	world.AddAll(&sphere, &floor, &metal, &glass, &bubble)
+	blue := p.NewSphere(-radius, 0, -1, radius, p.Lambertian{p.Color{0, 0, 1}})
+	red := p.NewSphere(radius, 0, -1, radius, p.Lambertian{p.Color{1, 0, 0}})
+
+	world.AddAll(&blue, &red)
 
 	render(&world, &camera)
 }
