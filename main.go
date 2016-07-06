@@ -104,7 +104,11 @@ func render(world *p.World, camera *p.Camera) {
 }
 
 func main() {
-	camera := p.NewCamera(90, float64(nx)/float64(ny))
+	lookFrom := p.Vector{-2, 2, 1}
+	lookAt := p.Vector{0, 0, -1}
+	vUp := p.Vector{0, 1, 0}
+
+	camera := p.NewCamera(lookFrom, lookAt, vUp, 90, float64(nx)/float64(ny))
 
 	world := p.World{}
 

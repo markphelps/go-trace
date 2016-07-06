@@ -37,6 +37,13 @@ func (v Vector) Dot(o Vector) float64 {
 	return v.X*o.X + v.Y*o.Y + v.Z*o.Z
 }
 
+func (v Vector) Cross(o Vector) Vector {
+	a := v.Y*o.Z - v.Z*o.Y
+	b := v.Z*o.X - v.X*o.Z
+	c := v.X*o.Y - v.Y*o.X
+	return Vector{a, b, c}
+}
+
 func (v Vector) Add(o Vector) Vector {
 	return Vector{v.X + o.X, v.Y + o.Y, v.Z + o.Z}
 }
