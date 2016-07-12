@@ -8,7 +8,7 @@ Also writing a blog series chronicling the process on [my blog](http://www.markp
 
 ## Current Status
 
-!['Dielectrics'](https://s3.amazonaws.com/markphelps.me/2016/dielectrics.png)
+!['Dielectrics'](https://s3.amazonaws.com/markphelps.me/2016/defocus_blur.png)
 
 It currently writes the image as a [PPM file](http://netpbm.sourceforge.net/doc/ppm.html), mainly because it's a super simple file format.
 
