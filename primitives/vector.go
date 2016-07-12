@@ -33,31 +33,32 @@ func (v Vector) Normalize() Vector {
 	return v.DivideScalar(v.Length())
 }
 
-func (v Vector) Dot(o Vector) float64 {
-	return v.X*o.X + v.Y*o.Y + v.Z*o.Z
+func (v Vector) Dot(ov Vector) float64 {
+	return v.X*ov.X + v.Y*ov.Y + v.Z*ov.Z
 }
 
-func (v Vector) Cross(o Vector) Vector {
-	a := v.Y*o.Z - v.Z*o.Y
-	b := v.Z*o.X - v.X*o.Z
-	c := v.X*o.Y - v.Y*o.X
-	return Vector{a, b, c}
+func (v Vector) Cross(ov Vector) Vector {
+	return Vector{
+		v.Y*ov.Z - v.Z*ov.Y,
+		v.Z*ov.X - v.X*ov.Z,
+		v.X*ov.Y - v.Y*ov.X,
+	}
 }
 
-func (v Vector) Add(o Vector) Vector {
-	return Vector{v.X + o.X, v.Y + o.Y, v.Z + o.Z}
+func (v Vector) Add(ov Vector) Vector {
+	return Vector{v.X + ov.X, v.Y + ov.Y, v.Z + ov.Z}
 }
 
-func (v Vector) Subtract(o Vector) Vector {
-	return Vector{v.X - o.X, v.Y - o.Y, v.Z - o.Z}
+func (v Vector) Subtract(ov Vector) Vector {
+	return Vector{v.X - ov.X, v.Y - ov.Y, v.Z - ov.Z}
 }
 
-func (v Vector) Multiply(o Vector) Vector {
-	return Vector{v.X * o.X, v.Y * o.Y, v.Z * o.Z}
+func (v Vector) Multiply(ov Vector) Vector {
+	return Vector{v.X * ov.X, v.Y * ov.Y, v.Z * ov.Z}
 }
 
-func (v Vector) Divide(o Vector) Vector {
-	return Vector{v.X / o.X, v.Y / o.Y, v.Z / o.Z}
+func (v Vector) Divide(ov Vector) Vector {
+	return Vector{v.X / ov.X, v.Y / ov.Y, v.Z / ov.Z}
 }
 
 func (v Vector) AddScalar(t float64) Vector {
@@ -76,19 +77,19 @@ func (v Vector) DivideScalar(t float64) Vector {
 	return Vector{v.X / t, v.Y / t, v.Z / t}
 }
 
-func (v Vector) Reflect(o Vector) Vector {
-	b := 2 * v.Dot(o)
-	return v.Subtract(o.MultiplyScalar(b))
+func (v Vector) Reflect(ov Vector) Vector {
+	b := 2 * v.Dot(ov)
+	return v.Subtract(ov.MultiplyScalar(b))
 }
 
-func (v Vector) Refract(o Vector, n float64) (bool, Vector) {
+func (v Vector) Refract(ov Vector, n float64) (bool, Vector) {
 	uv := v.Normalize()
-	uo := o.Normalize()
+	uo := ov.Normalize()
 	dt := uv.Dot(uo)
 	discriminant := 1.0 - (n * n * (1 - dt*dt))
 	if discriminant > 0 {
-		a := uv.Subtract(o.MultiplyScalar(dt)).MultiplyScalar(n)
-		b := o.MultiplyScalar(math.Sqrt(discriminant))
+		a := uv.Subtract(ov.MultiplyScalar(dt)).MultiplyScalar(n)
+		b := ov.MultiplyScalar(math.Sqrt(discriminant))
 		return true, a.Subtract(b)
 	}
 	return false, Vector{}
