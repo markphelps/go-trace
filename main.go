@@ -12,13 +12,14 @@ import (
 )
 
 const (
-	c               = 255.99
-	defaultNx       = 600  // size of x
-	defaultNy       = 500  // size of y
-	defaultNs       = 100  // number of samples for aa
-	defaultAperture = 0.01 // smaller aperture means less blury
-	defaultFov      = 90   // field of view
+	c = 255.99
 )
+
+type config struct {
+	nx, ny, ns    int
+	aperture, fov float64
+	filename      string
+}
 
 func check(err error, msg string) {
 	if err != nil {
@@ -44,12 +45,12 @@ func color(r p.Ray, world p.Hitable, depth int) p.Color {
 	return p.Gradient(p.White, p.Blue, r.Direction.Normalize().Y)
 }
 
-func createFile(nx, ny int) *os.File {
-	f, err := os.Create("out.ppm")
+func createFile(cfg config) *os.File {
+	f, err := os.Create(cfg.filename)
 	check(err, "Error opening file: %v\n")
 
 	// http://netpbm.sourceforge.net/doc/ppm.html
-	_, err = fmt.Fprintf(f, "P3\n%d %d\n255\n", nx, ny)
+	_, err = fmt.Fprintf(f, "P3\n%d %d\n255\n", cfg.nx, cfg.ny)
 	check(err, "Error writting to file: %v\n")
 	return f
 }
@@ -65,23 +66,23 @@ func writeFile(f *os.File, rgb p.Color) {
 }
 
 // samples rays for anti-aliasing
-func sample(world *p.World, camera *p.Camera, i, j, nx, ny, ns int) p.Color {
+func sample(world *p.World, camera *p.Camera, cfg config, i, j int) p.Color {
 	rgb := p.Color{}
 
-	for s := 0; s < ns; s++ {
-		u := (float64(i) + rand.Float64()) / float64(nx)
-		v := (float64(j) + rand.Float64()) / float64(ny)
+	for s := 0; s < cfg.ns; s++ {
+		u := (float64(i) + rand.Float64()) / float64(cfg.nx)
+		v := (float64(j) + rand.Float64()) / float64(cfg.ny)
 
 		ray := camera.RayAt(u, v)
 		rgb = rgb.Add(color(ray, world, 0))
 	}
 
 	// average
-	return rgb.DivideScalar(float64(ns))
+	return rgb.DivideScalar(float64(cfg.ns))
 }
 
-func render(world *p.World, camera *p.Camera, nx, ny, ns int) {
-	f := createFile(nx, ny)
+func render(world *p.World, camera *p.Camera, cfg config) {
+	f := createFile(cfg)
 	defer f.Close()
 
 	ch := make(chan int)
@@ -90,24 +91,24 @@ func render(world *p.World, camera *p.Camera, nx, ny, ns int) {
 	go func() {
 		for {
 			if i, rendering := <-ch; rendering {
-				pct := 100 * float64(i) / float64(ny)
+				pct := 100 * float64(i) / float64(cfg.ny)
 				fmt.Printf("\r%.2f %% complete", pct)
 			}
 		}
 	}()
 
 	row := 1
-	for j := ny - 1; j >= 0; j-- {
+	for j := cfg.ny - 1; j >= 0; j-- {
 		ch <- row
 		row++
-		for i := 0; i < nx; i++ {
-			rgb := sample(world, camera, i, j, nx, ny, ns)
+		for i := 0; i < cfg.nx; i++ {
+			rgb := sample(world, camera, cfg, i, j)
 			writeFile(f, rgb)
 		}
 	}
 }
 
-func randomScene() *p.World {
+func scene() *p.World {
 	world := &p.World{}
 
 	floor := p.NewSphere(0, -1000, 0, 1000, p.Lambertian{C: p.Color{R: 0.5, G: 0.5, B: 0.5}})
@@ -157,26 +158,29 @@ func randomScene() *p.World {
 
 func main() {
 
-	fov := flag.Int("fov", defaultFov, "field of view")
-	nx := flag.Int("nx", defaultNx, "width of image")
-	ny := flag.Int("ny", defaultNy, "height of image")
-	ns := flag.Int("ns", defaultNs, "number of samples for AA")
-	aperture := flag.Float64("a", defaultAperture, "aperture")
+	cfg := config{}
+
+	flag.Float64Var(&cfg.fov, "fov", 90.0, "field of view")
+	flag.IntVar(&cfg.nx, "nx", 600, "width of image")
+	flag.IntVar(&cfg.ny, "ny", 500, "height of image")
+	flag.IntVar(&cfg.ns, "ns", 100, "number of samples for AA")
+	flag.Float64Var(&cfg.aperture, "a", 0.01, "aperture")
+	flag.StringVar(&cfg.filename, "o", "out.ppm", "output filename")
 
 	flag.Parse()
 
 	lookFrom := p.Vector{X: 1, Y: 4, Z: 6}
 	lookAt := p.Vector{X: 0, Y: 0, Z: -1}
 
-	camera := p.NewCamera(lookFrom, lookAt, float64(*fov), float64(*nx)/float64(*ny), *aperture)
+	camera := p.NewCamera(lookFrom, lookAt, cfg.fov, float64(cfg.nx)/float64(cfg.ny), cfg.aperture)
 
 	start := time.Now()
 
-	scene := randomScene()
+	scene := scene()
 
-	fmt.Printf("\nRendering %d X %d scene with %d objects...\n", *nx, *ny, scene.Size())
+	fmt.Printf("\nRendering %d x %d pixel scene with %d objects...\n", cfg.nx, cfg.ny, scene.Count())
 
-	render(scene, camera, *nx, *ny, *ns)
+	render(scene, camera, cfg)
 
 	fmt.Printf("\nDone. Elapsed: %v\n", time.Since(start))
 }

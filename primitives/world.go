@@ -14,7 +14,7 @@ func (w *World) AddAll(hitables ...Hitable) {
 	}
 }
 
-func (w *World) Size() int {
+func (w *World) Count() int {
 	return len(w.elements)
 }
 
