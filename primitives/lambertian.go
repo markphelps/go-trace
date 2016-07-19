@@ -1,11 +1,11 @@
 package primitives
 
 type Lambertian struct {
-	C Color
+	Attenuation Color
 }
 
 func (l Lambertian) Color() Color {
-	return l.C
+	return l.Attenuation
 }
 
 func (l Lambertian) Bounce(input Ray, hit Hit) (bool, Ray) {

@@ -1,12 +1,12 @@
 package primitives
 
 type Metal struct {
-	C    Color
-	Fuzz float64
+	Attenuation Color
+	Fuzz        float64
 }
 
 func (m Metal) Color() Color {
-	return m.C
+	return m.Attenuation
 }
 
 func (m Metal) Bounce(input Ray, hit Hit) (bool, Ray) {

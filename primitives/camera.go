@@ -5,6 +5,8 @@ import (
 	"math/rand"
 )
 
+var vUp = Vector{X: 0, Y: 1, Z: 0}
+
 type Camera struct {
 	lowerLeft, horizontal, vertical, origin, u, v, w Vector
 	lensRadius                                       float64
@@ -19,8 +21,6 @@ func NewCamera(lookFrom, lookAt Vector, vFov, aspect, aperture float64) *Camera 
 	theta := vFov * math.Pi / 180
 	halfHeight := math.Tan(theta / 2)
 	halfWidth := aspect * halfHeight
-
-	vUp := Vector{X: 0, Y: 1, Z: 0}
 
 	w := lookFrom.Subtract(lookAt).Normalize()
 	u := vUp.Cross(w).Normalize()
