@@ -10,9 +10,7 @@ Also writing a blog series chronicling the process on [my blog](http://www.markp
 
 !['Scene'](https://s3.amazonaws.com/markphelps.me/2016/scene2.png)
 
-It currently writes the image as a [PNG file](https://en.wikipedia.org/wiki/Portable_Network_Graphics), mainly because it's a loseless and compressed file format.
-
-But it would be easy to support JPG or GIF files too.
+It currently writes the image as a [PNG file](https://en.wikipedia.org/wiki/Portable_Network_Graphics), but it would be easy to support JPG or GIF files too.
 
 ## Running
 
@@ -28,7 +26,7 @@ Usage of ./go-trace:
   -height int
         height of image (default 500)
   -out string
-        output filename (default "out.ppm")
+        output filename (default "out.png")
   -samples int
         number of samples for anti-aliasing (default 100)
   -width int
@@ -40,7 +38,3 @@ Usage of ./go-trace:
   -z float
         look from Z (default 6)
 ```
-
-## Viewing
-
-To view the image in OS X, download [ToyViewer](https://itunes.apple.com/us/app/toyviewer/id414298354?mt=12).
