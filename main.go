@@ -8,6 +8,9 @@ import (
 	"os"
 	"time"
 
+	"image"
+	"image/png"
+
 	p "github.com/markphelps/go-trace/primitives"
 )
 
@@ -57,14 +60,8 @@ func sample(world *p.World, camera *p.Camera, i, j int) p.Color {
 	return rgb.DivideScalar(float64(config.ns))
 }
 
-func render(world *p.World, camera *p.Camera) {
-	file, err := os.Create(config.filename)
-	check(err, "Error opening file: %v\n")
-	defer file.Close()
-
-	// http://netpbm.sourceforge.net/doc/ppm.html
-	_, err = fmt.Fprintf(file, "P3\n%d %d\n255\n", config.nx, config.ny)
-	check(err, "Error writting to file: %v\n")
+func render(world *p.World, camera *p.Camera) image.Image {
+	img := image.NewNRGBA(image.Rect(0, 0, config.nx, config.ny))
 
 	ch := make(chan int)
 	defer close(ch)
@@ -79,20 +76,24 @@ func render(world *p.World, camera *p.Camera) {
 	}()
 
 	row := 1
-	for j := config.ny - 1; j >= 0; j-- {
+	for j := 0; j < config.ny; j++ {
 		ch <- row
 		row++
 		for i := 0; i < config.nx; i++ {
 			rgb := sample(world, camera, i, j)
-			// get intensity of colors with gamma-2 correction
-			ir := int(255.99 * math.Sqrt(rgb.R))
-			ig := int(255.99 * math.Sqrt(rgb.G))
-			ib := int(255.99 * math.Sqrt(rgb.B))
-
-			_, err := fmt.Fprintf(file, "%d %d %d\n", ir, ig, ib)
-			check(err, "Error writing to file: %v\n")
+			img.Set(i, config.ny-j-1, rgb.Sqrt())
 		}
 	}
+	return img
+}
+
+func write(img image.Image) {
+	file, err := os.Create(config.filename)
+	check(err, "Error opening file: %v\n")
+	defer file.Close()
+
+	err = png.Encode(file, img)
+	check(err, "Error writing to file: %v\n")
 }
 
 func scene() *p.World {
@@ -160,7 +161,7 @@ func main() {
 	flag.IntVar(&config.ny, "height", 500, "height of image")
 	flag.IntVar(&config.ns, "samples", 100, "number of samples for anti-aliasing")
 	flag.Float64Var(&config.aperture, "aperture", 0.01, "camera aperture")
-	flag.StringVar(&config.filename, "out", "out.ppm", "output filename")
+	flag.StringVar(&config.filename, "out", "out.png", "output filename")
 
 	flag.Parse()
 
@@ -174,7 +175,8 @@ func main() {
 
 	fmt.Printf("\nRendering %d x %d pixel scene with %d objects...\n", config.nx, config.ny, scene.Count())
 
-	render(scene, camera)
+	image := render(scene, camera)
+	write(image)
 
 	fmt.Printf("\n\nDone. Elapsed: %v\nOutput to: %s\n", time.Since(start), config.filename)
 }
