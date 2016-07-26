@@ -1,3 +1,4 @@
 *.ppm
+*.png
 .tags*
 go-trace

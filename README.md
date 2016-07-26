@@ -10,9 +10,9 @@ Also writing a blog series chronicling the process on [my blog](http://www.markp
 
 !['Scene'](https://s3.amazonaws.com/markphelps.me/2016/scene2.png)
 
-It currently writes the image as a [PPM file](http://netpbm.sourceforge.net/doc/ppm.html), mainly because it's a super simple file format.
+It currently writes the image as a [PNG file](https://en.wikipedia.org/wiki/Portable_Network_Graphics), mainly because it's a loseless and compressed file format.
 
-I may add support for more formats later.
+But it would be easy to support JPG or GIF files too.
 
 ## Running
 
