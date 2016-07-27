@@ -11,7 +11,7 @@ import (
 	"image"
 	"image/png"
 
-	p "github.com/markphelps/go-trace/primitives"
+	primatives "github.com/markphelps/go-trace/lib"
 )
 
 var config struct {
@@ -27,7 +27,7 @@ func check(err error, msg string) {
 	}
 }
 
-func color(r p.Ray, world p.Hitable, depth int) p.Color {
+func color(r primatives.Ray, world primatives.Hitable, depth int) primatives.Color {
 	hit, record := world.Hit(r, 0.001, math.MaxFloat64)
 
 	if hit {
@@ -38,15 +38,15 @@ func color(r p.Ray, world p.Hitable, depth int) p.Color {
 				return record.Material.Color().Multiply(newColor)
 			}
 		}
-		return p.Black
+		return primatives.Black
 	}
 
-	return p.Gradient(p.White, p.Blue, r.Direction.Normalize().Y)
+	return primatives.Gradient(primatives.White, primatives.Blue, r.Direction.Normalize().Y)
 }
 
 // samples rays for anti-aliasing
-func sample(world *p.World, camera *p.Camera, i, j int) p.Color {
-	rgb := p.Color{}
+func sample(world *primatives.World, camera *primatives.Camera, i, j int) primatives.Color {
+	rgb := primatives.Color{}
 
 	for s := 0; s < config.ns; s++ {
 		u := (float64(i) + rand.Float64()) / float64(config.nx)
@@ -60,7 +60,7 @@ func sample(world *p.World, camera *p.Camera, i, j int) p.Color {
 	return rgb.DivideScalar(float64(config.ns))
 }
 
-func render(world *p.World, camera *p.Camera) image.Image {
+func render(world *primatives.World, camera *primatives.Camera) image.Image {
 	img := image.NewNRGBA(image.Rect(0, 0, config.nx, config.ny))
 
 	ch := make(chan int)
@@ -96,33 +96,33 @@ func write(img image.Image) {
 	check(err, "Error writing to file: %v\n")
 }
 
-func scene() *p.World {
-	world := &p.World{}
+func scene() *primatives.World {
+	world := &primatives.World{}
 
-	floor := p.NewSphere(0, -1000, 0, 1000, p.Lambertian{Attenuation: p.Color{R: 0.5, G: 0.5, B: 0.5}})
+	floor := primatives.NewSphere(0, -1000, 0, 1000, primatives.Lambertian{Attenuation: primatives.Color{R: 0.5, G: 0.5, B: 0.5}})
 	world.Add(floor)
 
 	for a := -11; a < 11; a++ {
 		for b := -11; b < 11; b++ {
 			material := rand.Float64()
 
-			center := p.Vector{
+			center := primatives.Vector{
 				X: float64(a) + 0.9*rand.Float64(),
 				Y: 0.2,
 				Z: float64(b) + 0.9*rand.Float64()}
 
-			if center.Subtract(p.Vector{X: 4, Y: 0.2, Z: 0}).Length() > 0.9 {
+			if center.Subtract(primatives.Vector{X: 4, Y: 0.2, Z: 0}).Length() > 0.9 {
 				if material < 0.8 {
-					lambertian := p.NewSphere(center.X, center.Y, center.Z, 0.2,
-						p.Lambertian{Attenuation: p.Color{
+					lambertian := primatives.NewSphere(center.X, center.Y, center.Z, 0.2,
+						primatives.Lambertian{Attenuation: primatives.Color{
 							R: rand.Float64() * rand.Float64(),
 							G: rand.Float64() * rand.Float64(),
 							B: rand.Float64() * rand.Float64()}})
 
 					world.Add(lambertian)
 				} else if material < 0.95 {
-					metal := p.NewSphere(center.X, center.Y, center.Z, 0.2,
-						p.Metal{Attenuation: p.Color{
+					metal := primatives.NewSphere(center.X, center.Y, center.Z, 0.2,
+						primatives.Metal{Attenuation: primatives.Color{
 							R: 0.5 * (1.0 + rand.Float64()),
 							G: 0.5 * (1.0 + rand.Float64()),
 							B: 0.5 * (1.0 + rand.Float64())},
@@ -130,16 +130,16 @@ func scene() *p.World {
 
 					world.Add(metal)
 				} else {
-					glass := p.NewSphere(center.X, center.Y, center.Z, 0.2, p.Dielectric{Index: 1.5})
+					glass := primatives.NewSphere(center.X, center.Y, center.Z, 0.2, primatives.Dielectric{Index: 1.5})
 					world.Add(glass)
 				}
 			}
 		}
 	}
 
-	glass := p.NewSphere(0, 1, 0, 1.0, p.Dielectric{Index: 1.5})
-	lambertian := p.NewSphere(-4, 1, 0, 1.0, p.Lambertian{Attenuation: p.Color{R: 0.4, G: 0.0, B: 0.1}})
-	metal := p.NewSphere(4, 1, 0, 1.0, p.Metal{Attenuation: p.Color{R: 0.7, G: 0.6, B: 0.5}, Fuzz: 0.0})
+	glass := primatives.NewSphere(0, 1, 0, 1.0, primatives.Dielectric{Index: 1.5})
+	lambertian := primatives.NewSphere(-4, 1, 0, 1.0, primatives.Lambertian{Attenuation: primatives.Color{R: 0.4, G: 0.0, B: 0.1}})
+	metal := primatives.NewSphere(4, 1, 0, 1.0, primatives.Metal{Attenuation: primatives.Color{R: 0.7, G: 0.6, B: 0.5}, Fuzz: 0.0})
 
 	world.AddAll(glass, lambertian, metal)
 	return world
@@ -150,7 +150,7 @@ func init() {
 }
 
 func main() {
-	lookFrom := p.Vector{}
+	lookFrom := primatives.Vector{}
 
 	flag.Float64Var(&lookFrom.X, "x", 10, "look from X")
 	flag.Float64Var(&lookFrom.Y, "y", 4, "look from Y")
@@ -165,9 +165,9 @@ func main() {
 
 	flag.Parse()
 
-	lookAt := p.Vector{X: 0, Y: 0, Z: -1}
+	lookAt := primatives.Vector{X: 0, Y: 0, Z: -1}
 
-	camera := p.NewCamera(lookFrom, lookAt, config.fov, float64(config.nx)/float64(config.ny), config.aperture)
+	camera := primatives.NewCamera(lookFrom, lookAt, config.fov, float64(config.nx)/float64(config.ny), config.aperture)
 
 	start := time.Now()
 
