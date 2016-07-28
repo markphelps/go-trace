@@ -42,8 +42,16 @@ func NewCamera(lookFrom, lookAt Vector, vFov, aspect, aperture float64) *Camera 
 	return &c
 }
 
-func (c *Camera) RayAt(s, t float64) Ray {
-	rd := randomInUnitDisc().MultiplyScalar(c.lensRadius)
+func (c *Camera) RayAt(s, t float64, rnd *rand.Rand) Ray {
+	var randomInUnitDisc Vector
+	for {
+		randomInUnitDisc = Vector{rnd.Float64(), rnd.Float64(), 0}.MultiplyScalar(2).Subtract(Vector{1, 1, 0})
+		if randomInUnitDisc.Dot(randomInUnitDisc) < 1.0 {
+			break
+		}
+	}
+
+	rd := randomInUnitDisc.MultiplyScalar(c.lensRadius)
 	offset := c.u.MultiplyScalar(rd.X).Add(c.v.MultiplyScalar(rd.Y))
 
 	horizontal := c.horizontal.MultiplyScalar(s)
@@ -52,14 +60,4 @@ func (c *Camera) RayAt(s, t float64) Ray {
 	origin := c.origin.Add(offset)
 	direction := c.lowerLeft.Add(horizontal).Add(vertical).Subtract(c.origin).Subtract(offset)
 	return Ray{origin, direction}
-}
-
-func randomInUnitDisc() Vector {
-	var p Vector
-	for {
-		p = Vector{rand.Float64(), rand.Float64(), 0}.MultiplyScalar(2).Subtract(Vector{1, 1, 0})
-		if p.Dot(p) < 1.0 {
-			return p
-		}
-	}
 }

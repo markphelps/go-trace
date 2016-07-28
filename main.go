@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"os"
 	"runtime"
-	"sync"
 	"time"
 
 	"image"
@@ -47,14 +46,14 @@ func color(r primatives.Ray, world primatives.Hitable, depth int) primatives.Col
 }
 
 // samples rays for anti-aliasing
-func sample(world *primatives.World, camera *primatives.Camera, i, j int) primatives.Color {
+func sample(world *primatives.World, camera *primatives.Camera, rnd *rand.Rand, i, j int) primatives.Color {
 	rgb := primatives.Color{}
 
 	for s := 0; s < config.ns; s++ {
-		u := (float64(i) + rand.Float64()) / float64(config.nx)
-		v := (float64(j) + rand.Float64()) / float64(config.ny)
+		u := (float64(i) + rnd.Float64()) / float64(config.nx)
+		v := (float64(j) + rnd.Float64()) / float64(config.ny)
 
-		ray := camera.RayAt(u, v)
+		ray := camera.RayAt(u, v, rnd)
 		rgb = rgb.Add(color(ray, world, 0))
 	}
 
@@ -65,46 +64,29 @@ func sample(world *primatives.World, camera *primatives.Camera, i, j int) primat
 func render(world *primatives.World, camera *primatives.Camera) image.Image {
 	img := image.NewNRGBA(image.Rect(0, 0, config.nx, config.ny))
 
-	ch := make(chan int)
+	ch := make(chan int, config.ny)
 	defer close(ch)
 
-	go func() {
-		completed := 0
-		fmt.Print("0.00% complete")
-		for {
-			if _, rendering := <-ch; rendering {
-				completed++
-				pct := 100 * float64(completed) / float64(config.ny)
-				fmt.Printf("\r%.2f %% complete", pct)
-			}
-		}
-	}()
+	ncpu := runtime.NumCPU()
 
-	var wg sync.WaitGroup
-
-	// process n rows in parallel; increment by n each itteration
-	for index := 0; index < config.ny; index += runtime.NumCPU() {
-		// one row per core
-		for offset := 0; offset < runtime.NumCPU(); offset++ {
-			row := index + offset
-
-			// break if done
-			if row >= config.ny {
-				break
-			}
-
-			wg.Add(1)
-			go func(row int) {
-				defer wg.Done()
+	for i := 0; i < ncpu; i++ {
+		go func(i int) {
+			rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+			for row := i; row < config.ny; row += ncpu {
 				for col := 0; col < config.nx; col++ {
-					rgb := sample(world, camera, col, row)
+					rgb := sample(world, camera, rnd, col, row)
 					img.Set(col, config.ny-row-1, rgb.Sqrt())
 				}
 				ch <- 1
-			}(row)
+			}
+		}(i)
+	}
 
-		}
-		wg.Wait()
+	fmt.Print("0.00% complete")
+	for i := 0; i < config.ny; i++ {
+		<-ch
+		pct := 100 * float64(i+1) / float64(config.ny)
+		fmt.Printf("\r%.2f %% complete", pct)
 	}
 	return img
 }
@@ -168,6 +150,7 @@ func scene() *primatives.World {
 }
 
 func init() {
+	// seed for scene generation
 	rand.Seed(time.Now().UnixNano())
 }
 
