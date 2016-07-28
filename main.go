@@ -6,6 +6,8 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"runtime"
+	"sync"
 	"time"
 
 	"image"
@@ -67,22 +69,42 @@ func render(world *primatives.World, camera *primatives.Camera) image.Image {
 	defer close(ch)
 
 	go func() {
+		completed := 0
+		fmt.Print("0.00% complete")
 		for {
-			if i, rendering := <-ch; rendering {
-				pct := 100 * float64(i) / float64(config.ny)
+			if _, rendering := <-ch; rendering {
+				completed++
+				pct := 100 * float64(completed) / float64(config.ny)
 				fmt.Printf("\r%.2f %% complete", pct)
 			}
 		}
 	}()
 
-	row := 1
-	for j := 0; j < config.ny; j++ {
-		ch <- row
-		row++
-		for i := 0; i < config.nx; i++ {
-			rgb := sample(world, camera, i, j)
-			img.Set(i, config.ny-j-1, rgb.Sqrt())
+	var wg sync.WaitGroup
+
+	// process n rows in parallel; increment by n each itteration
+	for index := 0; index < config.ny; index += runtime.NumCPU() {
+		// one row per core
+		for offset := 0; offset < runtime.NumCPU(); offset++ {
+			row := index + offset
+
+			// break if done
+			if row >= config.ny {
+				break
+			}
+
+			wg.Add(1)
+			go func(row int) {
+				defer wg.Done()
+				for col := 0; col < config.nx; col++ {
+					rgb := sample(world, camera, col, row)
+					img.Set(col, config.ny-row-1, rgb.Sqrt())
+				}
+				ch <- 1
+			}(row)
+
 		}
+		wg.Wait()
 	}
 	return img
 }
