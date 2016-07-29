@@ -8,7 +8,7 @@ Following the E-book by Peter Shirley ['Ray Tracing in One Weekend'](http://www.
 
 I also wrote a series of posts chronicling the process on [my blog](http://www.markphelps.me/2016/03/15/writing-a-ray-tracer-in-go.html).
 
-!['Scene'](https://s3.amazonaws.com/markphelps.me/2016/scene2.png)
+!['Scene'](https://s3.amazonaws.com/markphelps.me/2016/out.png)
 
 It currently writes the image as a [PNG file](https://en.wikipedia.org/wiki/Portable_Network_Graphics), but it would be easy to support JPG or GIF files too.
 
