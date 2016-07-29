@@ -17,6 +17,7 @@ import (
 
 var config struct {
 	nx, ny, ns    int
+	cpus          int
 	aperture, fov float64
 	filename      string
 }
@@ -67,12 +68,10 @@ func render(world *primatives.World, camera *primatives.Camera) image.Image {
 	ch := make(chan int, config.ny)
 	defer close(ch)
 
-	ncpu := runtime.NumCPU()
-
-	for i := 0; i < ncpu; i++ {
+	for i := 0; i < config.cpus; i++ {
 		go func(i int) {
 			rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-			for row := i; row < config.ny; row += ncpu {
+			for row := i; row < config.ny; row += config.cpus {
 				for col := 0; col < config.nx; col++ {
 					rgb := sample(world, camera, rnd, col, row)
 					img.Set(col, config.ny-row-1, rgb.Sqrt())
@@ -167,8 +166,13 @@ func main() {
 	flag.IntVar(&config.ns, "samples", 100, "number of samples for anti-aliasing")
 	flag.Float64Var(&config.aperture, "aperture", 0.01, "camera aperture")
 	flag.StringVar(&config.filename, "out", "out.png", "output filename")
+	flag.IntVar(&config.cpus, "cpus", runtime.NumCPU(), "number of CPUs to use")
 
 	flag.Parse()
+
+	if config.cpus > runtime.NumCPU() {
+		config.cpus = runtime.NumCPU()
+	}
 
 	lookAt := primatives.Vector{X: 0, Y: 0, Z: -1}
 
@@ -178,7 +182,7 @@ func main() {
 
 	scene := scene()
 
-	fmt.Printf("\nRendering %d x %d pixel scene with %d objects...\n", config.nx, config.ny, scene.Count())
+	fmt.Printf("\nRendering %d x %d pixel scene with %d objects [%d cpus, %d samples]...\n", config.nx, config.ny, scene.Count(), config.cpus, config.ns)
 
 	image := render(scene, camera)
 	write(image)
