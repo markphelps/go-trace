@@ -2,11 +2,11 @@
 
 Implementing a Path Tracer so that I can teach myself the Go language.
 
+Now with more concurrency! :sparkles:
+
 Following the E-book by Peter Shirley ['Ray Tracing in One Weekend'](http://www.amazon.com/Ray-Tracing-Weekend-Peter-Shirley-ebook/dp/B01B5AODD8), but in Go instead of C++.
 
-Also writing a blog series chronicling the process on [my blog](http://www.markphelps.me/2016/03/15/writing-a-ray-tracer-in-go.html).
-
-## Current Status
+I also wrote a series of posts chronicling the process on [my blog](http://www.markphelps.me/2016/03/15/writing-a-ray-tracer-in-go.html).
 
 !['Scene'](https://s3.amazonaws.com/markphelps.me/2016/scene2.png)
 
@@ -15,14 +15,12 @@ It currently writes the image as a [PNG file](https://en.wikipedia.org/wiki/Port
 ## Running
 
 ```
-$ go build
-
 $ ./go-trace --help
 Usage of ./go-trace:
   -aperture float
         camera aperture (default 0.01)
   -fov float
-        vertical field of view (default 75)
+        vertical field of view (degrees) (default 75)
   -height int
         height of image (default 500)
   -out string
