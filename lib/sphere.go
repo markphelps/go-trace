@@ -4,6 +4,16 @@ import (
 	"math"
 )
 
+type Hit struct {
+	T             float64
+	Point, Normal Vector
+	Material
+}
+
+type Hitable interface {
+	Hit(r Ray, tMin float64, tMax float64) (bool, Hit)
+}
+
 type Sphere struct {
 	Center Vector
 	Radius float64
