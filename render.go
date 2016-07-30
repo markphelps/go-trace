@@ -28,7 +28,7 @@ func color(r primatives.Ray, world primatives.Hitable, depth int) primatives.Col
 }
 
 // samples rays for anti-aliasing
-func sample(world *primatives.World, camera *primatives.Camera, rnd *rand.Rand, i, j int) primatives.Color {
+func sample(world *primatives.World, camera *primatives.Camera, rnd *rand.Rand, config Configuration, i, j int) primatives.Color {
 	rgb := primatives.Color{}
 
 	for s := 0; s < config.ns; s++ {
@@ -43,18 +43,18 @@ func sample(world *primatives.World, camera *primatives.Camera, rnd *rand.Rand, 
 	return rgb.DivideScalar(float64(config.ns))
 }
 
-func render(world *primatives.World, camera *primatives.Camera) image.Image {
+func render(world *primatives.World, camera *primatives.Camera, config Configuration) image.Image {
 	img := image.NewNRGBA(image.Rect(0, 0, config.nx, config.ny))
 
 	ch := make(chan int, config.ny)
 	defer close(ch)
 
-	for i := 0; i < config.cpus; i++ {
+	for i := 0; i < config.ncpus; i++ {
 		go func(i int) {
 			rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-			for row := i; row < config.ny; row += config.cpus {
+			for row := i; row < config.ny; row += config.ncpus {
 				for col := 0; col < config.nx; col++ {
-					rgb := sample(world, camera, rnd, col, row)
+					rgb := sample(world, camera, rnd, config, col, row)
 					img.Set(col, config.ny-row-1, rgb.Sqrt())
 				}
 				ch <- 1
@@ -62,7 +62,7 @@ func render(world *primatives.World, camera *primatives.Camera) image.Image {
 		}(i)
 	}
 
-	fmt.Print("0.00% complete")
+	fmt.Print("\n0.00% complete")
 	for i := 0; i < config.ny; i++ {
 		<-ch
 		pct := 100 * float64(i+1) / float64(config.ny)
