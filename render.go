@@ -11,14 +11,14 @@ import (
 	primatives "github.com/markphelps/go-trace/lib"
 )
 
-func color(r primatives.Ray, world primatives.Hitable, depth int) primatives.Color {
+func color(r primatives.Ray, world primatives.Hitable, rnd *rand.Rand, depth int) primatives.Color {
 	hit, record := world.Hit(r, 0.001, math.MaxFloat64)
 
 	if hit {
 		if depth < 50 {
-			bounced, bouncedRay := record.Bounce(r, record)
+			bounced, bouncedRay := record.Bounce(r, record, rnd)
 			if bounced {
-				newColor := color(bouncedRay, world, depth+1)
+				newColor := color(bouncedRay, world, rnd, depth+1)
 				return record.Material.Color().Multiply(newColor)
 			}
 		}
@@ -37,7 +37,7 @@ func sample(world *primatives.World, camera *primatives.Camera, rnd *rand.Rand, 
 		v := (float64(j) + rnd.Float64()) / float64(config.ny)
 
 		ray := camera.RayAt(u, v, rnd)
-		rgb = rgb.Add(color(ray, world, 0))
+		rgb = rgb.Add(color(ray, world, rnd, 0))
 	}
 
 	// average

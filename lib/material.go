@@ -6,7 +6,7 @@ import (
 )
 
 type Material interface {
-	Bounce(input Ray, hit Hit) (bool, Ray)
+	Bounce(input Ray, hit Hit, rnd *rand.Rand) (bool, Ray)
 	Color() Color
 }
 
@@ -18,8 +18,8 @@ func (l Lambertian) Color() Color {
 	return l.Attenuation
 }
 
-func (l Lambertian) Bounce(input Ray, hit Hit) (bool, Ray) {
-	direction := hit.Normal.Add(VectorInUnitSphere())
+func (l Lambertian) Bounce(input Ray, hit Hit, rnd *rand.Rand) (bool, Ray) {
+	direction := hit.Normal.Add(VectorInUnitSphere(rnd))
 	return true, Ray{hit.Point, direction}
 }
 
@@ -32,9 +32,9 @@ func (m Metal) Color() Color {
 	return m.Attenuation
 }
 
-func (m Metal) Bounce(input Ray, hit Hit) (bool, Ray) {
+func (m Metal) Bounce(input Ray, hit Hit, rnd *rand.Rand) (bool, Ray) {
 	direction := input.Direction.Reflect(hit.Normal)
-	bouncedRay := Ray{hit.Point, direction.Add(VectorInUnitSphere().MultiplyScalar(m.Fuzz))}
+	bouncedRay := Ray{hit.Point, direction.Add(VectorInUnitSphere(rnd).MultiplyScalar(m.Fuzz))}
 	bounced := direction.Dot(hit.Normal) > 0
 	return bounced, bouncedRay
 }
@@ -47,7 +47,7 @@ func (d Dielectric) Color() Color {
 	return Color{1.0, 1.0, 1.0}
 }
 
-func (d Dielectric) Bounce(input Ray, hit Hit) (bool, Ray) {
+func (d Dielectric) Bounce(input Ray, hit Hit, rnd *rand.Rand) (bool, Ray) {
 	var outwardNormal Vector
 	var niOverNt, cosine float64
 
@@ -79,7 +79,7 @@ func (d Dielectric) Bounce(input Ray, hit Hit) (bool, Ray) {
 		reflectProbability = 1.0
 	}
 
-	if rand.Float64() < reflectProbability {
+	if rnd.Float64() < reflectProbability {
 		reflected := input.Direction.Reflect(hit.Normal)
 		return true, Ray{hit.Point, reflected}
 	}
