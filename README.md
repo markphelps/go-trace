@@ -15,20 +15,22 @@ It currently writes the image as a [PNG file](https://en.wikipedia.org/wiki/Port
 ## Running
 
 ```
-$ ./go-trace --help
+$ ./go-trace -help
 Usage of ./go-trace:
   -aperture float
         camera aperture (default 0.01)
+  -cpus int
+        number of CPUs to use (default 4)
   -fov float
         vertical field of view (degrees) (default 75)
   -height int
-        height of image (default 500)
+        height of image (pixels) (default 500)
   -out string
         output filename (default "out.png")
   -samples int
-        number of samples for anti-aliasing (default 100)
+        number of samples per pixel for AA (default 100)
   -width int
-        width of image (default 600)
+        width of image (pixels) (default 600)
   -x float
         look from X (default 10)
   -y float
