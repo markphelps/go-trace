@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,22 +11,17 @@ import (
 	primatives "github.com/markphelps/go-trace/lib"
 )
 
-type Configuration struct {
+type Config struct {
 	nx, ny, ns    int
 	ncpus         int
 	aperture, fov float64
-}
-
-func init() {
-	// seed for scene generation
-	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
 	var filename string
 	var x, y, z float64
 
-	config := Configuration{}
+	config := Config{}
 
 	flag.Float64Var(&config.fov, "fov", 75.0, "vertical field of view (degrees)")
 	flag.IntVar(&config.nx, "width", 600, "width of image (pixels)")
@@ -72,22 +66,4 @@ func main() {
 	writePNG(filename, image)
 
 	fmt.Printf("\n\nDone. Elapsed: %v\nOutput to: %s\n", time.Since(start), filename)
-}
-
-func boundFloat(min, max, value float64) float64 {
-	if value > max {
-		value = max
-	} else if value < min {
-		value = min
-	}
-	return value
-}
-
-func boundInt(min, max, value int) int {
-	if value > max {
-		value = max
-	} else if value < min {
-		value = min
-	}
-	return value
 }

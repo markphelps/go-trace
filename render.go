@@ -28,7 +28,7 @@ func color(r primatives.Ray, world primatives.Hitable, depth int) primatives.Col
 }
 
 // samples rays for anti-aliasing
-func sample(world *primatives.World, camera *primatives.Camera, rnd *rand.Rand, config Configuration, i, j int) primatives.Color {
+func sample(world *primatives.World, camera *primatives.Camera, rnd *rand.Rand, config Config, i, j int) primatives.Color {
 	rgb := primatives.Color{}
 
 	for s := 0; s < config.ns; s++ {
@@ -43,7 +43,7 @@ func sample(world *primatives.World, camera *primatives.Camera, rnd *rand.Rand, 
 	return rgb.DivideScalar(float64(config.ns))
 }
 
-func render(world *primatives.World, camera *primatives.Camera, config Configuration) image.Image {
+func render(world *primatives.World, camera *primatives.Camera, config Config) image.Image {
 	img := image.NewNRGBA(image.Rect(0, 0, config.nx, config.ny))
 
 	ch := make(chan int, config.ny)

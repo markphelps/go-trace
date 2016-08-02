@@ -22,3 +22,21 @@ func check(err error, msg string) {
 		os.Exit(1)
 	}
 }
+
+func boundFloat(min, max, value float64) float64 {
+	if value > max {
+		value = max
+	} else if value < min {
+		value = min
+	}
+	return value
+}
+
+func boundInt(min, max, value int) int {
+	if value > max {
+		value = max
+	} else if value < min {
+		value = min
+	}
+	return value
+}

@@ -2,9 +2,15 @@ package main
 
 import (
 	"math/rand"
+	"time"
 
 	primatives "github.com/markphelps/go-trace/lib"
 )
+
+func init() {
+	// seed for scene generation
+	rand.Seed(time.Now().UnixNano())
+}
 
 func randomScene() *primatives.World {
 	world := &primatives.World{}
