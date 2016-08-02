@@ -12,7 +12,7 @@ I also wrote a series of posts chronicling the process on [my blog](http://www.m
 
 It currently writes the image as a [PNG file](https://en.wikipedia.org/wiki/Portable_Network_Graphics), but it would be easy to support JPG or GIF files too.
 
-## Running
+## Options
 
 ```
 $ ./go-trace -help
@@ -37,4 +37,15 @@ Usage of ./go-trace:
         look from Y (default 4)
   -z float
         look from Z (default 6)
+```
+
+## Running
+
+```
+$ ./go-trace
+
+Rendering 600 x 500 pixel scene with 486 objects:
+[4 cpus, 100 samples/pixel, 75.00° fov, 0.01 aperture]
+
+[==========----------------------------------------------------------------------] 12.80%
 ```
