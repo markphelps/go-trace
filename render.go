@@ -55,7 +55,7 @@ func render(world *primatives.World, camera *primatives.Camera, config Configura
 			for row := i; row < config.ny; row += config.ncpus {
 				for col := 0; col < config.nx; col++ {
 					rgb := sample(world, camera, rnd, config, col, row)
-					img.Set(col, config.ny-row-1, rgb.Sqrt())
+					img.Set(col, config.ny-row-1, rgb)
 				}
 				ch <- 1
 			}

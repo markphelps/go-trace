@@ -16,16 +16,12 @@ var (
 
 // For compatibility with image.Color
 func (c Color) RGBA() (r, g, b, a uint32) {
-	r = uint32(c.R * 0xffff)
-	g = uint32(c.G * 0xffff)
-	b = uint32(c.B * 0xffff)
+	// Sqrt() for gamma-2 correction
+	r = uint32(math.Sqrt(c.R) * 0xffff)
+	g = uint32(math.Sqrt(c.G) * 0xffff)
+	b = uint32(math.Sqrt(c.B) * 0xffff)
 	a = 0xffff
 	return
-}
-
-// get intensity of colors with gamma-2 correction
-func (c Color) Sqrt() Color {
-	return Color{math.Sqrt(c.R), math.Sqrt(c.G), math.Sqrt(c.B)}
 }
 
 func (c Color) Add(o Color) Color {

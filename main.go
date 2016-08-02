@@ -30,9 +30,9 @@ func main() {
 	config := Configuration{}
 
 	flag.Float64Var(&config.fov, "fov", 75.0, "vertical field of view (degrees)")
-	flag.IntVar(&config.nx, "width", 600, "width of image")
-	flag.IntVar(&config.ny, "height", 500, "height of image")
-	flag.IntVar(&config.ns, "samples", 100, "number of samples for anti-aliasing")
+	flag.IntVar(&config.nx, "width", 600, "width of image (pixels)")
+	flag.IntVar(&config.ny, "height", 500, "height of image (pixels)")
+	flag.IntVar(&config.ns, "samples", 100, "number of samples per pixel for AA")
 	flag.Float64Var(&config.aperture, "aperture", 0.01, "camera aperture")
 	flag.IntVar(&config.ncpus, "cpus", runtime.NumCPU(), "number of CPUs to use")
 
@@ -66,7 +66,7 @@ func main() {
 	scene := randomScene()
 
 	fmt.Printf("\nRendering %d x %d pixel scene with %d objects...\n", config.nx, config.ny, scene.Count())
-	fmt.Printf("[%d cpus, %d samples, %.2f fov]\n", config.ncpus, config.ns, config.fov)
+	fmt.Printf("[%d cpus, %d samples/pixel, %.2f° fov]\n", config.ncpus, config.ns, config.fov)
 
 	image := render(scene, camera, config)
 	writePNG(filename, image)
