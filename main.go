@@ -11,6 +11,26 @@ import (
 	primatives "github.com/markphelps/go-trace/lib"
 )
 
+const (
+	maxFov      = 120.0
+	maxWidth    = 4096
+	maxHeight   = 2160
+	maxSamples  = 5000
+	maxAperture = 0.9
+
+	minFov      = 10.0
+	minWidth    = 200
+	minHeight   = 100
+	minSamples  = 1
+	minAperture = 0.001
+
+	defaultFov      = 75.0
+	defaultWidth    = 600
+	defaultHeight   = 500
+	defaultSamples  = 100
+	defaultAperture = 0.01
+)
+
 type Config struct {
 	nx, ny, ns    int
 	ncpus         int
@@ -23,11 +43,11 @@ func main() {
 
 	config := Config{}
 
-	flag.Float64Var(&config.fov, "fov", 75.0, "vertical field of view (degrees)")
-	flag.IntVar(&config.nx, "width", 600, "width of image (pixels)")
-	flag.IntVar(&config.ny, "height", 500, "height of image (pixels)")
-	flag.IntVar(&config.ns, "samples", 100, "number of samples per pixel for AA")
-	flag.Float64Var(&config.aperture, "aperture", 0.01, "camera aperture")
+	flag.Float64Var(&config.fov, "fov", defaultFov, "vertical field of view (degrees)")
+	flag.IntVar(&config.nx, "width", defaultWidth, "width of image (pixels)")
+	flag.IntVar(&config.ny, "height", defaultHeight, "height of image (pixels)")
+	flag.IntVar(&config.ns, "samples", defaultSamples, "number of samples per pixel for AA")
+	flag.Float64Var(&config.aperture, "aperture", defaultAperture, "camera aperture")
 	flag.IntVar(&config.ncpus, "cpus", runtime.NumCPU(), "number of CPUs to use")
 
 	flag.StringVar(&filename, "out", "out.png", "output filename")
@@ -43,8 +63,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	config.fov = boundFloat(minFov, maxFov, config.fov)
+	config.nx = boundInt(minWidth, maxWidth, config.nx)
+	config.ny = boundInt(minHeight, maxHeight, config.ny)
+	config.ns = boundInt(minSamples, maxSamples, config.ns)
+	config.aperture = boundFloat(minAperture, maxAperture, config.aperture)
 	config.ncpus = boundInt(1, runtime.NumCPU(), config.ncpus)
-	config.fov = boundFloat(10.0, 120.0, config.fov)
 
 	lookFrom := primatives.Vector{X: x, Y: y, Z: z}
 	lookAt := primatives.Vector{X: 0, Y: 0, Z: -1}
@@ -59,8 +83,8 @@ func main() {
 
 	scene := randomScene()
 
-	fmt.Printf("\nRendering %d x %d pixel scene with %d objects...\n", config.nx, config.ny, scene.Count())
-	fmt.Printf("[%d cpus, %d samples/pixel, %.2f° fov]\n", config.ncpus, config.ns, config.fov)
+	fmt.Printf("\nRendering %d x %d pixel scene with %d objects:\n", config.nx, config.ny, scene.Count())
+	fmt.Printf("[%d cpus, %d samples/pixel, %.2f° fov, %.2f aperture]\n", config.ncpus, config.ns, config.fov, config.aperture)
 
 	image := render(scene, camera, config)
 	writePNG(filename, image)

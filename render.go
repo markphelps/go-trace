@@ -5,6 +5,7 @@ import (
 	"image"
 	"math"
 	"math/rand"
+	"strings"
 	"time"
 
 	primatives "github.com/markphelps/go-trace/lib"
@@ -62,11 +63,13 @@ func render(world *primatives.World, camera *primatives.Camera, config Config) i
 		}(i)
 	}
 
-	fmt.Print("\n0.00% complete")
-	for i := 0; i < config.ny; i++ {
+	fmt.Println()
+	for i := 1; i <= config.ny; i++ {
 		<-ch
-		pct := 100 * float64(i+1) / float64(config.ny)
-		fmt.Printf("\r%.2f %% complete", pct)
+		pct := 100 * float64(i) / float64(config.ny)
+		filled := (80 * i) / config.ny
+		bar := strings.Repeat("=", filled) + strings.Repeat("-", 80-filled)
+		fmt.Printf("\r[%s] %.2f%%", bar, pct)
 	}
 	return img
 }
