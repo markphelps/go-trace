@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -59,8 +58,7 @@ func main() {
 	flag.Parse()
 
 	if filepath.Ext(filename) != ".png" {
-		fmt.Fprintf(os.Stderr, "Error: output must be a .png file\n")
-		os.Exit(1)
+		check(fmt.Errorf("output must be a .png file"))
 	}
 
 	config.fov = boundFloat(minFov, maxFov, config.fov)

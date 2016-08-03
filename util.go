@@ -9,16 +9,16 @@ import (
 
 func writePNG(path string, img image.Image) {
 	file, err := os.Create(path)
-	check(err, "Error opening file: %v\n")
+	check(err)
 	defer file.Close()
 
 	err = png.Encode(file, img)
-	check(err, "Error writing to file: %v\n")
+	check(err)
 }
 
-func check(err error, msg string) {
+func check(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, msg, err)
+		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
 }
