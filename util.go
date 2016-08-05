@@ -1,26 +1,25 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"image/png"
 	"os"
 )
 
-func writePNG(path string, img image.Image) {
+func writePNG(path string, img image.Image) (err error) {
 	file, err := os.Create(path)
-	check(err)
-	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	err = png.Encode(file, img)
-	check(err)
-}
-
-func check(err error) {
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
+	return err
 }
 
 func boundFloat(min, max, value float64) float64 {

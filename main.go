@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -58,7 +59,8 @@ func main() {
 	flag.Parse()
 
 	if filepath.Ext(filename) != ".png" {
-		check(fmt.Errorf("output must be a .png file"))
+		fmt.Println("Error: output must be a .png file")
+		os.Exit(1)
 	}
 
 	config.fov = boundFloat(minFov, maxFov, config.fov)
@@ -85,7 +87,12 @@ func main() {
 	fmt.Printf("[%d cpus, %d samples/pixel, %.2f° fov, %.2f aperture]\n", config.ncpus, config.ns, config.fov, config.aperture)
 
 	image := render(scene, camera, config)
-	writePNG(filename, image)
+
+	err := writePNG(filename, image)
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
 
 	fmt.Printf("\n\nDone. Elapsed: %v\nOutput to: %s\n", time.Since(start), filename)
 }
