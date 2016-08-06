@@ -1,75 +1,70 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"math"
 	"math/rand"
-	"strings"
+	"sync"
 	"time"
 
 	primatives "github.com/markphelps/go-trace/lib"
 )
 
-func color(r primatives.Ray, world primatives.Hitable, rnd *rand.Rand, depth int) primatives.Color {
-	hit, record := world.Hit(r, 0.001, math.MaxFloat64)
+func color(ray primatives.Ray, hitable primatives.Hitable, rnd *rand.Rand, depth int) primatives.Color {
+	hit, record := hitable.Hit(ray, 0.001, math.MaxFloat64)
 
 	if hit {
 		if depth < 50 {
-			bounced, bouncedRay := record.Bounce(r, record, rnd)
+			bounced, bouncedRay := record.Bounce(ray, record, rnd)
 			if bounced {
-				newColor := color(bouncedRay, world, rnd, depth+1)
+				newColor := color(bouncedRay, hitable, rnd, depth+1)
 				return record.Material.Color().Multiply(newColor)
 			}
 		}
 		return primatives.Black
 	}
 
-	return primatives.Gradient(primatives.White, primatives.Blue, r.Direction.Normalize().Y)
+	return primatives.Gradient(primatives.White, primatives.Blue, ray.Direction.Normalize().Y)
 }
 
 // samples rays for anti-aliasing
-func sample(world primatives.Hitable, camera *primatives.Camera, rnd *rand.Rand, config Config, i, j int) primatives.Color {
+func sample(hitable primatives.Hitable, camera *primatives.Camera, rnd *rand.Rand, cfg config, i, j int) primatives.Color {
 	rgb := primatives.Color{}
 
-	for s := 0; s < config.ns; s++ {
-		u := (float64(i) + rnd.Float64()) / float64(config.nx)
-		v := (float64(j) + rnd.Float64()) / float64(config.ny)
+	for s := 0; s < cfg.ns; s++ {
+		u := (float64(i) + rnd.Float64()) / float64(cfg.nx)
+		v := (float64(j) + rnd.Float64()) / float64(cfg.ny)
 
 		ray := camera.RayAt(u, v, rnd)
-		rgb = rgb.Add(color(ray, world, rnd, 0))
+		rgb = rgb.Add(color(ray, hitable, rnd, 0))
 	}
 
 	// average
-	return rgb.DivideScalar(float64(config.ns))
+	return rgb.DivideScalar(float64(cfg.ns))
 }
 
-func render(world primatives.Hitable, camera *primatives.Camera, config Config) image.Image {
-	img := image.NewNRGBA(image.Rect(0, 0, config.nx, config.ny))
+func render(hitable primatives.Hitable, camera *primatives.Camera, cfg config, ch chan int) image.Image {
+	img := image.NewNRGBA(image.Rect(0, 0, cfg.nx, cfg.ny))
 
-	ch := make(chan int, config.ny)
-	defer close(ch)
+	var wg sync.WaitGroup
 
-	for i := 0; i < config.ncpus; i++ {
+	for i := 0; i < cfg.ncpus; i++ {
+		wg.Add(1)
+
 		go func(i int) {
+			defer wg.Done()
 			rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-			for row := i; row < config.ny; row += config.ncpus {
-				for col := 0; col < config.nx; col++ {
-					rgb := sample(world, camera, rnd, config, col, row)
-					img.Set(col, config.ny-row-1, rgb)
+
+			for row := i; row < cfg.ny; row += cfg.ncpus {
+				for col := 0; col < cfg.nx; col++ {
+					rgb := sample(hitable, camera, rnd, cfg, col, row)
+					img.Set(col, cfg.ny-row-1, rgb)
 				}
 				ch <- 1
 			}
 		}(i)
 	}
 
-	fmt.Println()
-	for i := 1; i <= config.ny; i++ {
-		<-ch
-		pct := 100 * float64(i) / float64(config.ny)
-		filled := (80 * i) / config.ny
-		bar := strings.Repeat("=", filled) + strings.Repeat("-", 80-filled)
-		fmt.Printf("\r[%s] %.2f%%", bar, pct)
-	}
+	wg.Wait()
 	return img
 }

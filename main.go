@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	primatives "github.com/markphelps/go-trace/lib"
@@ -31,7 +32,7 @@ const (
 	defaultAperture = 0.01
 )
 
-type Config struct {
+type config struct {
 	nx, ny, ns    int
 	ncpus         int
 	aperture, fov float64
@@ -41,14 +42,14 @@ func main() {
 	var filename string
 	var x, y, z float64
 
-	config := Config{}
+	cfg := config{}
 
-	flag.Float64Var(&config.fov, "fov", defaultFov, "vertical field of view (degrees)")
-	flag.IntVar(&config.nx, "width", defaultWidth, "width of image (pixels)")
-	flag.IntVar(&config.ny, "height", defaultHeight, "height of image (pixels)")
-	flag.IntVar(&config.ns, "samples", defaultSamples, "number of samples per pixel for AA")
-	flag.Float64Var(&config.aperture, "aperture", defaultAperture, "camera aperture")
-	flag.IntVar(&config.ncpus, "cpus", runtime.NumCPU(), "number of CPUs to use")
+	flag.Float64Var(&cfg.fov, "fov", defaultFov, "vertical field of view (degrees)")
+	flag.IntVar(&cfg.nx, "width", defaultWidth, "width of image (pixels)")
+	flag.IntVar(&cfg.ny, "height", defaultHeight, "height of image (pixels)")
+	flag.IntVar(&cfg.ns, "samples", defaultSamples, "number of samples per pixel for AA")
+	flag.Float64Var(&cfg.aperture, "aperture", defaultAperture, "camera aperture")
+	flag.IntVar(&cfg.ncpus, "cpus", runtime.NumCPU(), "number of CPUs to use")
 
 	flag.StringVar(&filename, "out", "out.png", "output filename")
 
@@ -63,30 +64,35 @@ func main() {
 		os.Exit(1)
 	}
 
-	config.fov = boundFloat(minFov, maxFov, config.fov)
-	config.nx = boundInt(minWidth, maxWidth, config.nx)
-	config.ny = boundInt(minHeight, maxHeight, config.ny)
-	config.ns = boundInt(minSamples, maxSamples, config.ns)
-	config.aperture = boundFloat(minAperture, maxAperture, config.aperture)
-	config.ncpus = boundInt(1, runtime.NumCPU(), config.ncpus)
+	cfg.fov = boundFloat(minFov, maxFov, cfg.fov)
+	cfg.nx = boundInt(minWidth, maxWidth, cfg.nx)
+	cfg.ny = boundInt(minHeight, maxHeight, cfg.ny)
+	cfg.ns = boundInt(minSamples, maxSamples, cfg.ns)
+	cfg.aperture = boundFloat(minAperture, maxAperture, cfg.aperture)
+	cfg.ncpus = boundInt(1, runtime.NumCPU(), cfg.ncpus)
 
 	lookFrom := primatives.Vector{X: x, Y: y, Z: z}
 	lookAt := primatives.Vector{X: 0, Y: 0, Z: -1}
 
 	camera := primatives.NewCamera(lookFrom,
 		lookAt,
-		config.fov,
-		float64(config.nx)/float64(config.ny),
-		config.aperture)
+		cfg.fov,
+		float64(cfg.nx)/float64(cfg.ny),
+		cfg.aperture)
 
 	start := time.Now()
 
 	scene := randomScene()
 
-	fmt.Printf("\nRendering %d x %d pixel scene with %d objects:\n", config.nx, config.ny, scene.Count())
-	fmt.Printf("[%d cpus, %d samples/pixel, %.2f° fov, %.2f aperture]\n", config.ncpus, config.ns, config.fov, config.aperture)
+	fmt.Printf("\nRendering %d x %d pixel scene with %d objects:", cfg.nx, cfg.ny, scene.Count())
+	fmt.Printf("\n[%d cpus, %d samples/pixel, %.2f° fov, %.2f aperture]\n", cfg.ncpus, cfg.ns, cfg.fov, cfg.aperture)
 
-	image := render(scene, camera, config)
+	ch := make(chan int, cfg.ny)
+	defer close(ch)
+
+	go outputProgress(ch, cfg.ny)
+
+	image := render(scene, camera, cfg, ch)
 
 	err := writePNG(filename, image)
 	if err != nil {
@@ -94,5 +100,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("\n\nDone. Elapsed: %v\nOutput to: %s\n", time.Since(start), filename)
+	fmt.Printf("\nDone. Elapsed: %v", time.Since(start))
+	fmt.Printf("\nOutput to: %s\n", filename)
+}
+
+func outputProgress(ch chan int, rows int) {
+	fmt.Println()
+	for i := 1; i <= rows; i++ {
+		<-ch
+		pct := 100 * float64(i) / float64(rows)
+		filled := (80 * i) / rows
+		bar := strings.Repeat("=", filled) + strings.Repeat("-", 80-filled)
+		fmt.Printf("\r[%s] %.2f%%", bar, pct)
+	}
+	fmt.Println()
 }
