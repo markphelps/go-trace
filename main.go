@@ -33,9 +33,9 @@ const (
 )
 
 type config struct {
-	nx, ny, ns    int
-	ncpus         int
-	aperture, fov float64
+	width, height, ns int
+	ncpus             int
+	aperture, fov     float64
 }
 
 func main() {
@@ -45,8 +45,8 @@ func main() {
 	cfg := config{}
 
 	flag.Float64Var(&cfg.fov, "fov", defaultFov, "vertical field of view (degrees)")
-	flag.IntVar(&cfg.nx, "width", defaultWidth, "width of image (pixels)")
-	flag.IntVar(&cfg.ny, "height", defaultHeight, "height of image (pixels)")
+	flag.IntVar(&cfg.width, "width", defaultWidth, "width of image (pixels)")
+	flag.IntVar(&cfg.height, "height", defaultHeight, "height of image (pixels)")
 	flag.IntVar(&cfg.ns, "samples", defaultSamples, "number of samples per pixel for AA")
 	flag.Float64Var(&cfg.aperture, "aperture", defaultAperture, "camera aperture")
 	flag.IntVar(&cfg.ncpus, "cpus", runtime.NumCPU(), "number of CPUs to use")
@@ -65,8 +65,8 @@ func main() {
 	}
 
 	cfg.fov = boundFloat(minFov, maxFov, cfg.fov)
-	cfg.nx = boundInt(minWidth, maxWidth, cfg.nx)
-	cfg.ny = boundInt(minHeight, maxHeight, cfg.ny)
+	cfg.width = boundInt(minWidth, maxWidth, cfg.width)
+	cfg.height = boundInt(minHeight, maxHeight, cfg.height)
 	cfg.ns = boundInt(minSamples, maxSamples, cfg.ns)
 	cfg.aperture = boundFloat(minAperture, maxAperture, cfg.aperture)
 	cfg.ncpus = boundInt(1, runtime.NumCPU(), cfg.ncpus)
@@ -74,23 +74,19 @@ func main() {
 	lookFrom := primatives.Vector{X: x, Y: y, Z: z}
 	lookAt := primatives.Vector{X: 0, Y: 0, Z: -1}
 
-	camera := primatives.NewCamera(lookFrom,
-		lookAt,
-		cfg.fov,
-		float64(cfg.nx)/float64(cfg.ny),
-		cfg.aperture)
+	camera := primatives.NewCamera(lookFrom, lookAt, cfg.fov, float64(cfg.width)/float64(cfg.height), cfg.aperture)
 
 	start := time.Now()
 
 	scene := randomScene()
 
-	fmt.Printf("\nRendering %d x %d pixel scene with %d objects:", cfg.nx, cfg.ny, scene.Count())
+	fmt.Printf("\nRendering %d x %d pixel scene with %d objects:", cfg.width, cfg.height, scene.Count())
 	fmt.Printf("\n[%d cpus, %d samples/pixel, %.2f° fov, %.2f aperture]\n", cfg.ncpus, cfg.ns, cfg.fov, cfg.aperture)
 
-	ch := make(chan int, cfg.ny)
+	ch := make(chan int, cfg.height)
 	defer close(ch)
 
-	go outputProgress(ch, cfg.ny)
+	go outputProgress(ch, cfg.height)
 
 	image := render(scene, camera, cfg, ch)
 

@@ -32,8 +32,8 @@ func sample(hitable primatives.Hitable, camera *primatives.Camera, rnd *rand.Ran
 	rgb := primatives.Color{}
 
 	for s := 0; s < cfg.ns; s++ {
-		u := (float64(i) + rnd.Float64()) / float64(cfg.nx)
-		v := (float64(j) + rnd.Float64()) / float64(cfg.ny)
+		u := (float64(i) + rnd.Float64()) / float64(cfg.width)
+		v := (float64(j) + rnd.Float64()) / float64(cfg.height)
 
 		ray := camera.RayAt(u, v, rnd)
 		rgb = rgb.Add(color(ray, hitable, rnd, 0))
@@ -44,7 +44,7 @@ func sample(hitable primatives.Hitable, camera *primatives.Camera, rnd *rand.Ran
 }
 
 func render(hitable primatives.Hitable, camera *primatives.Camera, cfg config, ch chan int) image.Image {
-	img := image.NewNRGBA(image.Rect(0, 0, cfg.nx, cfg.ny))
+	img := image.NewNRGBA(image.Rect(0, 0, cfg.width, cfg.height))
 
 	var wg sync.WaitGroup
 
@@ -55,10 +55,10 @@ func render(hitable primatives.Hitable, camera *primatives.Camera, cfg config, c
 			defer wg.Done()
 			rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-			for row := i; row < cfg.ny; row += cfg.ncpus {
-				for col := 0; col < cfg.nx; col++ {
+			for row := i; row < cfg.height; row += cfg.ncpus {
+				for col := 0; col < cfg.width; col++ {
 					rgb := sample(hitable, camera, rnd, cfg, col, row)
-					img.Set(col, cfg.ny-row-1, rgb)
+					img.Set(col, cfg.height-row-1, rgb)
 				}
 				ch <- 1
 			}
