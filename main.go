@@ -16,7 +16,7 @@ const (
 	maxFov      = 120.0
 	maxWidth    = 4096
 	maxHeight   = 2160
-	maxSamples  = 5000
+	maxSamples  = 1000
 	maxAperture = 0.9
 
 	minFov      = 10.0
@@ -30,6 +30,8 @@ const (
 	defaultHeight   = 500
 	defaultSamples  = 100
 	defaultAperture = 0.01
+
+	progressBarWidth = 80
 )
 
 type config struct {
@@ -105,8 +107,8 @@ func outputProgress(ch chan int, rows int) {
 	for i := 1; i <= rows; i++ {
 		<-ch
 		pct := 100 * float64(i) / float64(rows)
-		filled := (80 * i) / rows
-		bar := strings.Repeat("=", filled) + strings.Repeat("-", 80-filled)
+		filled := (progressBarWidth * i) / rows
+		bar := strings.Repeat("=", filled) + strings.Repeat("-", progressBarWidth-filled)
 		fmt.Printf("\r[%s] %.2f%%", bar, pct)
 	}
 	fmt.Println()
