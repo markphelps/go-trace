@@ -10,11 +10,16 @@ import (
 	primatives "github.com/markphelps/go-trace/lib"
 )
 
+const (
+	maxDepth = 50
+	tMin     = 0.001
+)
+
 func color(ray primatives.Ray, hitable primatives.Hitable, rnd *rand.Rand, depth int) primatives.Color {
-	hit, record := hitable.Hit(ray, 0.001, math.MaxFloat64)
+	hit, record := hitable.Hit(ray, tMin, math.MaxFloat64)
 
 	if hit {
-		if depth < 50 {
+		if depth < maxDepth {
 			bounced, bouncedRay := record.Bounce(ray, record, rnd)
 			if bounced {
 				newColor := color(bouncedRay, hitable, rnd, depth+1)

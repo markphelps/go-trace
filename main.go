@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	primatives "github.com/markphelps/go-trace/lib"
+	primative "github.com/markphelps/go-trace/lib"
 )
 
 const (
@@ -40,43 +40,46 @@ type config struct {
 	aperture, fov     float64
 }
 
-func main() {
-	var filename string
-	var x, y, z float64
+var (
+	cfg      config
+	filename string
+	x, y, z  float64
+)
 
-	cfg := config{}
-
+func init() {
 	flag.Float64Var(&cfg.fov, "fov", defaultFov, "vertical field of view (degrees)")
-	flag.IntVar(&cfg.width, "width", defaultWidth, "width of image (pixels)")
-	flag.IntVar(&cfg.height, "height", defaultHeight, "height of image (pixels)")
-	flag.IntVar(&cfg.ns, "samples", defaultSamples, "number of samples per pixel for AA")
-	flag.Float64Var(&cfg.aperture, "aperture", defaultAperture, "camera aperture")
+	flag.IntVar(&cfg.width, "w", defaultWidth, "width of image (pixels)")
+	flag.IntVar(&cfg.height, "h", defaultHeight, "height of image (pixels)")
+	flag.IntVar(&cfg.ns, "n", defaultSamples, "number of samples per pixel for AA")
+	flag.Float64Var(&cfg.aperture, "a", defaultAperture, "camera aperture")
 	flag.IntVar(&cfg.ncpus, "cpus", runtime.NumCPU(), "number of CPUs to use")
 
-	flag.StringVar(&filename, "out", "out.png", "output filename")
+	flag.StringVar(&filename, "o", "out.png", "output filename")
 
 	flag.Float64Var(&x, "x", 10, "look from X")
 	flag.Float64Var(&y, "y", 4, "look from Y")
 	flag.Float64Var(&z, "z", 6, "look from Z")
+}
 
+func main() {
 	flag.Parse()
 
-	if filepath.Ext(filename) != ".png" {
+	if strings.ToLower(filepath.Ext(filename)) != ".png" {
 		fmt.Println("Error: output must be a .png file")
 		os.Exit(1)
 	}
 
-	cfg.fov = boundFloat(minFov, maxFov, cfg.fov)
-	cfg.width = boundInt(minWidth, maxWidth, cfg.width)
-	cfg.height = boundInt(minHeight, maxHeight, cfg.height)
-	cfg.ns = boundInt(minSamples, maxSamples, cfg.ns)
-	cfg.aperture = boundFloat(minAperture, maxAperture, cfg.aperture)
-	cfg.ncpus = boundInt(1, runtime.NumCPU(), cfg.ncpus)
+	cfg.fov = clampFloat(cfg.fov, minFov, maxFov)
+	cfg.width = clampInt(cfg.width, minWidth, maxWidth)
+	cfg.height = clampInt(cfg.height, minHeight, maxHeight)
+	cfg.ns = clampInt(cfg.ns, minSamples, maxSamples)
+	cfg.aperture = clampFloat(cfg.aperture, minAperture, maxAperture)
+	cfg.ncpus = clampInt(cfg.ncpus, 1, runtime.NumCPU())
 
-	lookFrom := primatives.Vector{X: x, Y: y, Z: z}
-	lookAt := primatives.Vector{X: 0, Y: 0, Z: -1}
+	lookFrom := primative.Vector{X: x, Y: y, Z: z}
+	lookAt := primative.Vector{X: 0, Y: 0, Z: -1}
 
-	camera := primatives.NewCamera(lookFrom, lookAt, cfg.fov, float64(cfg.width)/float64(cfg.height), cfg.aperture)
+	camera := primative.NewCamera(lookFrom, lookAt, cfg.fov, float64(cfg.width)/float64(cfg.height), cfg.aperture)
 
 	start := time.Now()
 

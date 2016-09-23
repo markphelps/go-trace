@@ -22,7 +22,7 @@ func writePNG(path string, img image.Image) (err error) {
 	return err
 }
 
-func boundFloat(min, max, value float64) float64 {
+func clampFloat(value, min, max float64) float64 {
 	if value > max {
 		value = max
 	} else if value < min {
@@ -31,7 +31,7 @@ func boundFloat(min, max, value float64) float64 {
 	return value
 }
 
-func boundInt(min, max, value int) int {
+func clampInt(value, min, max int) int {
 	if value > max {
 		value = max
 	} else if value < min {
