@@ -20,7 +20,7 @@ Usage of ./go-trace:
   -a float
         camera aperture (default 0.01)
   -cpus int
-        number of CPUs to use (default 4)
+        number of CPUs to use (default runtime.NumCPU())
   -fov float
         vertical field of view (degrees) (default 75)
   -h int
