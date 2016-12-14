@@ -96,3 +96,15 @@ func main() {
 	fmt.Printf("\nDone. Elapsed: %v", time.Since(start))
 	fmt.Printf("\nOutput to: %s\n", filename)
 }
+
+func outputProgress(ch <-chan int, rows int) {
+	fmt.Println()
+	for i := 1; i <= rows; i++ {
+		<-ch
+		pct := 100 * float64(i) / float64(rows)
+		filled := (progressBarWidth * i) / rows
+		bar := strings.Repeat("=", filled) + strings.Repeat("-", progressBarWidth-filled)
+		fmt.Printf("\r[%s] %.2f%%", bar, pct)
+	}
+	fmt.Println()
+}

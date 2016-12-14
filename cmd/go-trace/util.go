@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"image/png"
 	"os"
-	"strings"
 )
 
 func writePNG(path string, img image.Image) error {
@@ -40,16 +38,4 @@ func clampInt(value, min, max int) int {
 		value = min
 	}
 	return value
-}
-
-func outputProgress(ch <-chan int, rows int) {
-	fmt.Println()
-	for i := 1; i <= rows; i++ {
-		<-ch
-		pct := 100 * float64(i) / float64(rows)
-		filled := (progressBarWidth * i) / rows
-		bar := strings.Repeat("=", filled) + strings.Repeat("-", progressBarWidth-filled)
-		fmt.Printf("\r[%s] %.2f%%", bar, pct)
-	}
-	fmt.Println()
 }
