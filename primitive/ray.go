@@ -1,4 +1,4 @@
-package primitives
+package primitive
 
 type Ray struct {
 	Origin, Direction Vector

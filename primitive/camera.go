@@ -1,4 +1,4 @@
-package primitives
+package primitive
 
 import (
 	"math"

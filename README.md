@@ -42,7 +42,12 @@ Usage of ./go-trace:
 ## Running
 
 ```
-$ ./go-trace
+$ make
+go build -o bin/go-trace github.com/markphelps/go-trace/cmd/go-trace
+```
+
+```
+$ ./bin/go-trace
 
 Rendering 600 x 500 pixel scene with 486 objects:
 [4 cpus, 100 samples/pixel, 75.00° fov, 0.01 aperture]
