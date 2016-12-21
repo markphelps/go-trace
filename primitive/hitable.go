@@ -52,12 +52,10 @@ func (s *Sphere) Hit(r Ray, tMin float64, tMax float64) (bool, Hit) {
 	return false, Hit{}
 }
 
-type World struct {
-	elements []Hitable
-}
+type World []Hitable
 
 func (w *World) Add(h Hitable) {
-	w.elements = append(w.elements, h)
+	*w = append(*w, h)
 }
 
 func (w *World) AddAll(hitables ...Hitable) {
@@ -67,7 +65,7 @@ func (w *World) AddAll(hitables ...Hitable) {
 }
 
 func (w *World) Count() int {
-	return len(w.elements)
+	return len(*w)
 }
 
 func (w *World) Hit(r Ray, tMin float64, tMax float64) (bool, Hit) {
@@ -75,7 +73,7 @@ func (w *World) Hit(r Ray, tMin float64, tMax float64) (bool, Hit) {
 	closest := tMax
 	record := Hit{}
 
-	for _, element := range w.elements {
+	for _, element := range *w {
 		if element != nil {
 			hit, tempRecord := element.Hit(r, tMin, closest)
 
