@@ -1,17 +1,25 @@
+.PHONY: build install clean test
+
 PROJECT := go-trace
 WORKDIR := github.com/markphelps/$(PROJECT)
 BINPATH := bin
+
+VERSION := $(shell git describe --abbrev=0 --tags)
+LDFLAGS := -X main.Version=$(VERSION)
 
 default: build
 
 build:
 	@mkdir -p $(BINPATH)
-	go build -o $(BINPATH)/$(PROJECT) $(WORKDIR)/cmd/$(PROJECT)
+	go build -v -ldflags "$(LDFLAGS)" -o $(BINPATH)/$(PROJECT) $(WORKDIR)/cmd/$(PROJECT)
 
 install:
-	go install -v $(WORKDIR)/...
+	go clean -i $(WORKDIR)/...
+	go install -v -ldflags "$(LDFLAGS)" $(WORKDIR)/...
 
 clean:
-	go clean $(WORKDIR)/...
+	go clean -i $(WORKDIR)/...
 
-.PHONY: build install clean
+test:
+	go test -v $(WORKDIR)/...
+

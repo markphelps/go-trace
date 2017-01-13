@@ -14,6 +14,8 @@ import (
 	"github.com/markphelps/go-trace/render"
 )
 
+var Version = "0.0.0"
+
 const (
 	maxFov      = 120.0
 	maxWidth    = 4096
@@ -42,6 +44,7 @@ var (
 	file                         string
 	x, y, z                      float64
 	allowedFiletypes             = []string{".png"}
+	version                      bool
 )
 
 func main() {
@@ -57,7 +60,14 @@ func main() {
 	flag.Float64Var(&y, "y", 4, "look from Y")
 	flag.Float64Var(&z, "z", 6, "look from Z")
 
+	flag.BoolVar(&version, "version", false, "show version and exit")
+
 	flag.Parse()
+
+	if version {
+		fmt.Printf("go-trace %s\n", Version)
+		os.Exit(0)
+	}
 
 	lookFrom := primitive.Vector{X: x, Y: y, Z: z}
 	lookAt := primitive.Vector{X: 0, Y: 0, Z: -1}
