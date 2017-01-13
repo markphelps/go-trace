@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"image"
+	"image/png"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -38,35 +39,25 @@ const (
 var (
 	aperture, fov                float64
 	width, height, samples, cpus int
-	filename                     string
+	file                         string
 	x, y, z                      float64
+	allowedFiletypes             = []string{".png"}
 )
 
 func main() {
-	flag.Float64Var(&fov, "fov", defaultFov, "vertical field of view (degrees)")
-	flag.IntVar(&width, "w", defaultWidth, "width of image (pixels)")
-	flag.IntVar(&height, "h", defaultHeight, "height of image (pixels)")
-	flag.IntVar(&samples, "n", defaultSamples, "number of samples per pixel for AA")
-	flag.Float64Var(&aperture, "a", defaultAperture, "camera aperture")
-	flag.IntVar(&cpus, "cpus", runtime.NumCPU(), "number of CPUs to use")
-	flag.StringVar(&filename, "o", "out.png", "output filename")
+	BoundFloat64Var(&fov, "fov", defaultFov, minFov, maxFov, "vertical field of view (degrees)")
+	BoundIntVar(&width, "w", defaultWidth, minWidth, maxWidth, "width of image (pixels)")
+	BoundIntVar(&height, "h", defaultHeight, minHeight, maxHeight, "height of image (pixels)")
+	BoundIntVar(&samples, "n", defaultSamples, minSamples, maxSamples, "number of samples per pixel for AA")
+	BoundFloat64Var(&aperture, "a", defaultAperture, minAperture, maxAperture, "camera aperture")
+	BoundIntVar(&cpus, "cpus", runtime.NumCPU(), 1, runtime.NumCPU(), "number of CPUs to use")
+	FilenameVar(&file, "o", "out.png", allowedFiletypes, "output filename")
+
 	flag.Float64Var(&x, "x", 10, "look from X")
 	flag.Float64Var(&y, "y", 4, "look from Y")
 	flag.Float64Var(&z, "z", 6, "look from Z")
 
 	flag.Parse()
-
-	if strings.ToLower(filepath.Ext(filename)) != ".png" {
-		fmt.Println("Error: output must be a .png file")
-		os.Exit(1)
-	}
-
-	fov = clampFloat(fov, minFov, maxFov)
-	width = clampInt(width, minWidth, maxWidth)
-	height = clampInt(height, minHeight, maxHeight)
-	samples = clampInt(samples, minSamples, maxSamples)
-	aperture = clampFloat(aperture, minAperture, maxAperture)
-	cpus = clampInt(cpus, 1, runtime.NumCPU())
 
 	lookFrom := primitive.Vector{X: x, Y: y, Z: z}
 	lookAt := primitive.Vector{X: 0, Y: 0, Z: -1}
@@ -78,7 +69,7 @@ func main() {
 	scene := render.RandomScene()
 
 	fmt.Printf("\nRendering %d x %d pixel scene with %d objects:", width, height, scene.Count())
-	fmt.Printf("\n[%d cpus, %d samples/pixel, %.2f° fov, %.2f aperture]\n", cpus, samples, fov, aperture)
+	fmt.Printf("\n[%d cpus, %d samples/pixel, %.2f° fov, %.2f aperture]", cpus, samples, fov, aperture)
 
 	ch := make(chan int, height)
 	defer close(ch)
@@ -87,14 +78,13 @@ func main() {
 
 	image := render.Do(scene, camera, cpus, samples, width, height, ch)
 
-	err := writePNG(filename, image)
-	if err != nil {
+	if err := writePNG(file, image); err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
 
 	fmt.Printf("\nDone. Elapsed: %v", time.Since(start))
-	fmt.Printf("\nOutput to: %s\n", filename)
+	fmt.Printf("\nOutput to: %s\n", file)
 }
 
 func outputProgress(ch <-chan int, rows int) {
@@ -107,4 +97,20 @@ func outputProgress(ch <-chan int, rows int) {
 		fmt.Printf("\r[%s] %.2f%%", bar, pct)
 	}
 	fmt.Println()
+}
+
+func writePNG(path string, img image.Image) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	err = png.Encode(file, img)
+	return err
 }
