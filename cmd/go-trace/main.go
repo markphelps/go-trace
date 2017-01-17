@@ -4,8 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -14,6 +16,7 @@ import (
 	"github.com/markphelps/go-trace/render"
 )
 
+// Version is the git tag set at build time
 var Version = "0.0.0"
 
 const (
@@ -38,13 +41,25 @@ const (
 	progressBarWidth = 80
 )
 
+type fileType int
+
+const (
+	pngType fileType = iota
+	jpegType
+)
+
 var (
 	aperture, fov                float64
 	width, height, samples, cpus int
 	file                         string
 	x, y, z                      float64
-	allowedFiletypes             = []string{".png"}
 	version                      bool
+
+	imageTypes = map[string]interface{}{
+		".png":  pngType,
+		".jpg":  jpegType,
+		".jpeg": jpegType,
+	}
 )
 
 func main() {
@@ -54,7 +69,7 @@ func main() {
 	BoundIntVar(&samples, "n", defaultSamples, minSamples, maxSamples, "number of samples per pixel for AA")
 	BoundFloat64Var(&aperture, "a", defaultAperture, minAperture, maxAperture, "camera aperture")
 	BoundIntVar(&cpus, "cpus", runtime.NumCPU(), 1, runtime.NumCPU(), "number of CPUs to use")
-	FilenameVar(&file, "o", "out.png", allowedFiletypes, "output filename")
+	FilenameVar(&file, "o", "out.png", imageTypes, "output filename")
 
 	flag.Float64Var(&x, "x", 10, "look from X")
 	flag.Float64Var(&y, "y", 4, "look from Y")
@@ -88,7 +103,7 @@ func main() {
 
 	image := render.Do(scene, camera, cpus, samples, width, height, ch)
 
-	if err := writePNG(file, image); err != nil {
+	if err := writeFile(file, image); err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
@@ -109,7 +124,7 @@ func outputProgress(ch <-chan int, rows int) {
 	fmt.Println()
 }
 
-func writePNG(path string, img image.Image) error {
+func writeFile(path string, img image.Image) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
@@ -121,6 +136,16 @@ func writePNG(path string, img image.Image) error {
 		}
 	}()
 
-	err = png.Encode(file, img)
+	ext := strings.ToLower(filepath.Ext(path))
+
+	switch imageType, _ := imageTypes[ext]; imageType {
+	case jpegType:
+		err = jpeg.Encode(file, img, nil)
+	case pngType:
+		err = png.Encode(file, img)
+	default:
+		err = fmt.Errorf("Invalid extension: %s", ext)
+	}
+
 	return err
 }

@@ -103,10 +103,10 @@ func BoundFloat64(name string, value, min, max float64, usage string) *float64 {
 
 type filenameValue struct {
 	val        *string
-	extensions []string
+	extensions map[string]interface{}
 }
 
-func newFilenameValue(val string, p *string, extensions []string) *filenameValue {
+func newFilenameValue(val string, p *string, extensions map[string]interface{}) *filenameValue {
 	*p = val
 	return &filenameValue{p, extensions}
 }
@@ -119,27 +119,25 @@ func (f *filenameValue) String() string {
 }
 
 func (f *filenameValue) Set(value string) error {
-	var err error
+	ext := strings.ToLower(filepath.Ext(value))
 
-	allowed := strings.Join(f.extensions, ",")
-	switch ext := strings.ToLower(filepath.Ext(value)); ext {
-	case allowed:
-		*f.val = value
-	default:
-		err = fmt.Errorf("Invalid extension: %s, allowed: %s", ext, allowed)
+	if _, ok := f.extensions[ext]; !ok {
+		return fmt.Errorf("Invalid extension: %s", ext)
 	}
-	return err
+
+	*f.val = value
+	return nil
 }
 
-// FilenameVar defines a string flag with specified name, default value, allowed values and usage string.
+// FilenameVar defines a string flag with specified name, default value, allowed extension values and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
-func FilenameVar(p *string, name, value string, extensions []string, usage string) {
+func FilenameVar(p *string, name, value string, extensions map[string]interface{}, usage string) {
 	flag.Var(newFilenameValue(value, p, extensions), name, usage)
 }
 
-// Filename defines a string flag with specified name, default value, allowed values and usage string.
+// Filename defines a string flag with specified name, default value, allowed extension values and usage string.
 // The return value is the address of an string variable that stores the value of the flag.
-func Filename(name, value string, extensions []string, usage string) *string {
+func Filename(name, value string, extensions map[string]interface{}, usage string) *string {
 	p := &value
 	FilenameVar(p, name, value, extensions, usage)
 	return p
