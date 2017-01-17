@@ -10,26 +10,26 @@ I also wrote a series of posts chronicling the process on [my blog](http://www.m
 
 !['Scene'](https://s3.amazonaws.com/markphelps.me/2016/out.png)
 
-It currently writes the image as a [PNG file](https://en.wikipedia.org/wiki/Portable_Network_Graphics), but it would be easy to support JPG or GIF files too.
-
 ## Options
 
 ```
-$ ./go-trace -help
-Usage of ./go-trace:
-  -a float
-        camera aperture (default 0.01)
-  -cpus int
-        number of CPUs to use (default runtime.NumCPU())
-  -fov float
-        vertical field of view (degrees) (default 75)
-  -h int
+$ ./bin/go-trace -help
+Usage of ./bin/go-trace:
+  -a value
+        camera aperture (default 0.010000)
+  -cpus value
+        number of CPUs to use (default 8)
+  -fov value
+        vertical field of view (degrees) (default 75.000000)
+  -h value
         height of image (pixels) (default 500)
-  -o string
-        output filename (default "out.png")
-  -n int
+  -n value
         number of samples per pixel for AA (default 100)
-  -w int
+  -o value
+        output filename (default out.png)
+  -version
+        show version and exit
+  -w value
         width of image (pixels) (default 600)
   -x float
         look from X (default 10)
@@ -54,3 +54,23 @@ Rendering 600 x 500 pixel scene with 486 objects:
 
 [==========----------------------------------------------------------------------] 12.80%
 ```
+
+## Tests
+
+```
+$ make test
+```
+
+## Output
+
+The default output format is [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) and the default filename is **out.png**.
+
+This can be changed by using the `-o` flag as described in the help output.
+
+Ex: `$ ./bin/go-trace -o output.jpeg`
+
+Current supported file extensions:
+
+* .png
+* .jpg
+* .jpeg
