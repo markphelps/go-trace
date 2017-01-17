@@ -2,29 +2,6 @@ package main
 
 import "testing"
 
-func TestNewBoundIntValue(t *testing.T) {
-	p := new(int)
-
-	expected := 1
-	min := 0
-	max := 10
-
-	i := newBoundIntValue(expected, p, min, max)
-
-	if *p != expected {
-		t.Errorf("Invalid reference, expected: %v, got: %v", expected, *p)
-	}
-	if *i.val != expected {
-		t.Errorf("Invalid val, expected: %v, got: %v", expected, *i.val)
-	}
-	if i.min != min {
-		t.Errorf("Invalid min, expected: %v, got: %v", min, i.min)
-	}
-	if i.max != max {
-		t.Errorf("Invalid max, expected: %v, got: %v", max, i.max)
-	}
-}
-
 func TestBoundIntValueString(t *testing.T) {
 	testCases := []struct {
 		val      *int
@@ -71,29 +48,6 @@ func TestBoundIntValueSet(t *testing.T) {
 	}
 }
 
-func TestNewBoundFloat64Value(t *testing.T) {
-	p := new(float64)
-
-	expected := 1.0
-	min := 0.0
-	max := 10.0
-
-	i := newBoundFloat64Value(expected, p, min, max)
-
-	if *p != expected {
-		t.Errorf("Invalid reference, expected: %v, got: %v", expected, *p)
-	}
-	if *i.val != expected {
-		t.Errorf("Invalid val, expected: %v, got: %v", expected, *i.val)
-	}
-	if i.min != min {
-		t.Errorf("Invalid min, expected: %v, got: %v", min, i.min)
-	}
-	if i.max != max {
-		t.Errorf("Invalid max, expected: %v, got: %v", max, i.max)
-	}
-}
-
 func TestBoundFloat64ValueString(t *testing.T) {
 	testCases := []struct {
 		val      *float64
@@ -136,6 +90,54 @@ func TestBoundFloat64ValueSet(t *testing.T) {
 
 		if *i.val != tc.expected {
 			t.Errorf("Invalid value, expected: %v, got: %v", tc.expected, *i.val)
+		}
+	}
+}
+
+func TestFilenameValueString(t *testing.T) {
+	testCases := []struct {
+		val      *string
+		expected string
+	}{
+		{val: new(string), expected: ""},
+		{val: nil, expected: ""},
+	}
+
+	for _, tc := range testCases {
+		i := filenameValue{val: tc.val}
+		if i.String() != tc.expected {
+			t.Errorf("Invalid String() value, expected: %v, got: %v", tc.expected, i.String())
+		}
+	}
+}
+
+func TestFilenameValueSet(t *testing.T) {
+	testCases := []struct {
+		value   string
+		allowed map[string]interface{}
+		valid   bool
+		err     string
+	}{
+		{value: "test.png", allowed: map[string]interface{}{".png": true}, valid: true},
+		{value: "test.invalid", allowed: map[string]interface{}{".png": true}, valid: false, err: "Invalid extension: .invalid"},
+		{value: "test.png", allowed: map[string]interface{}{".png": true, ".jpg": true}, valid: true},
+		{value: "test.jpg", allowed: map[string]interface{}{".png": true, ".jpg": true}, valid: true},
+	}
+
+	for _, tc := range testCases {
+		f := filenameValue{val: new(string), extensions: tc.allowed}
+		err := f.Set(tc.value)
+
+		if tc.valid == false {
+			if err == nil {
+				t.Error("Expected error, got none")
+			} else if err.Error() != tc.err {
+				t.Errorf("Expected error: %v, got: %v", tc.err, err.Error())
+			}
+		} else {
+			if *f.val != tc.value {
+				t.Errorf("Expected: %v, got: %v", tc.value, *f.val)
+			}
 		}
 	}
 }
