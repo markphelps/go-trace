@@ -38,7 +38,7 @@ func TestBoundIntValueSet(t *testing.T) {
 		i := boundIntValue{val: new(int), min: tc.min, max: tc.max}
 		err := i.Set(tc.value)
 
-		if err != nil && tc.err != true {
+		if err != nil && !tc.err {
 			t.Error("Expected parse error, got none")
 		}
 
@@ -84,7 +84,7 @@ func TestBoundFloat64ValueSet(t *testing.T) {
 		i := boundFloat64Value{val: new(float64), min: tc.min, max: tc.max}
 		err := i.Set(tc.value)
 
-		if err != nil && tc.err != true {
+		if err != nil && !tc.err {
 			t.Error("Expected parse error, got none")
 		}
 
@@ -128,7 +128,7 @@ func TestFilenameValueSet(t *testing.T) {
 		f := filenameValue{val: new(string), extensions: tc.allowed}
 		err := f.Set(tc.value)
 
-		if tc.valid == false {
+		if !tc.valid {
 			if err == nil {
 				t.Error("Expected error, got none")
 			} else if err.Error() != tc.err {

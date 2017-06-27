@@ -49,7 +49,7 @@ func sample(hitable primitive.Hitable, camera *primitive.Camera, rnd *rand.Rand,
 }
 
 // Do performs the render, sampling each pixel the provided number of times
-func Do(hitable primitive.Hitable, camera *primitive.Camera, cpus, samples, width, height int, ch chan int) image.Image {
+func Do(hitable primitive.Hitable, camera *primitive.Camera, cpus, samples, width, height int, ch chan<- int) image.Image {
 	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 
 	var wg sync.WaitGroup

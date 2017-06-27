@@ -10,6 +10,12 @@ I also wrote a series of posts chronicling the process on [my blog](http://www.m
 
 !['Scene'](https://s3.amazonaws.com/markphelps.me/2016/out.png)
 
+[![Release](https://img.shields.io/github/release/markphelps/go-trace.svg?style=flat-square)](https://github.com/markphelps/go-trace/releases/latest)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/markphelps/go-trace)
+[![Go Report Card](https://goreportcard.com/badge/github.com/markphelps/example?style=flat-square)](https://goreportcard.com/report/github.com/markphelps/go-trace)
+[![SayThanks.io](https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg?style=flat-square)](https://saythanks.io/to/markphelps)
+
 ## Options
 
 ```

@@ -46,14 +46,6 @@ func BoundIntVar(p *int, name string, value, min, max int, usage string) {
 	flag.Var(newBoundIntValue(value, p, min, max), name, usage)
 }
 
-// BoundInt defines an int flag with specified name, default value, minimum value, maximum value and usage string.
-// The return value is the address of an int variable that stores the value of the flag.
-func BoundInt(name string, value, min, max int, usage string) *int {
-	p := &value
-	BoundIntVar(p, name, value, min, max, usage)
-	return p
-}
-
 type boundFloat64Value struct {
 	val      *float64
 	min, max float64
@@ -93,14 +85,6 @@ func BoundFloat64Var(p *float64, name string, value, min, max float64, usage str
 	flag.Var(newBoundFloat64Value(value, p, min, max), name, usage)
 }
 
-// BoundFloat64 defines a float64 flag with specified name, default value, minimum value, maximum value and usage string.
-// The return value is the address of an float64 variable that stores the value of the flag.
-func BoundFloat64(name string, value, min, max float64, usage string) *float64 {
-	p := &value
-	BoundFloat64Var(p, name, value, min, max, usage)
-	return p
-}
-
 type filenameValue struct {
 	val        *string
 	extensions map[string]interface{}
@@ -133,12 +117,4 @@ func (f *filenameValue) Set(value string) error {
 // The argument p points to a string variable in which to store the value of the flag.
 func FilenameVar(p *string, name, value string, extensions map[string]interface{}, usage string) {
 	flag.Var(newFilenameValue(value, p, extensions), name, usage)
-}
-
-// Filename defines a string flag with specified name, default value, allowed extension values and usage string.
-// The return value is the address of an string variable that stores the value of the flag.
-func Filename(name, value string, extensions map[string]interface{}, usage string) *string {
-	p := &value
-	FilenameVar(p, name, value, extensions, usage)
-	return p
 }

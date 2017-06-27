@@ -138,7 +138,7 @@ func writeFile(path string, img image.Image) error {
 
 	ext := strings.ToLower(filepath.Ext(path))
 
-	switch imageType, _ := imageTypes[ext]; imageType {
+	switch imageType := imageTypes[ext]; imageType {
 	case jpegType:
 		err = jpeg.Encode(file, img, nil)
 	case pngType:
