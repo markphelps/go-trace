@@ -1,6 +1,7 @@
 *.png
 *.jpg
 *.jpeg
+*.txt
 
 .tags*
 
