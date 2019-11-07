@@ -6,11 +6,10 @@ Now with more concurrency! :sparkles:
 
 Following the E-book by Peter Shirley ['Ray Tracing in One Weekend'](http://www.amazon.com/Ray-Tracing-Weekend-Peter-Shirley-ebook/dp/B01B5AODD8), but in Go instead of C++.
 
-I also wrote a series of posts chronicling the process on [my blog](http://www.markphelps.me/2016/03/15/writing-a-ray-tracer-in-go.html).
+I also wrote a series of posts chronicling the process on [my blog](https://www.markphelps.me/2016/03/15/writing-a-ray-tracer-in-go/).
 
 !['Scene'](https://s3.amazonaws.com/markphelps.me/2016/out.png)
 
-[![Release](https://img.shields.io/github/release/markphelps/go-trace.svg?style=flat-square)](https://github.com/markphelps/go-trace/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/markphelps/go-trace)
 [![Go Report Card](https://goreportcard.com/badge/github.com/markphelps/example?style=flat-square)](https://goreportcard.com/report/github.com/markphelps/go-trace)
